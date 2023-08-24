@@ -1,12 +1,14 @@
-let socket = io('http://localhost:8000',
-    {
-        transports: [
-            'websocket',
-            'polling',
-            'flashsocket'
-        ]
-    }
-)
+// let socket = io('http://localhost:8000',
+//     {
+//         transports: [
+//             'websocket',
+//             'polling',
+//             'flashsocket'
+//         ]
+//     }
+// )
+
+let socket = io()
 
 $('#submit').click(() => {
     let sender = $('#sender').val()
