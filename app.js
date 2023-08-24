@@ -40,4 +40,4 @@ socketIO.on('connection', socket => {
 })
 
 process.on('uncaughtException', (error) => { console.log(`[ ! ] ${error.message}`) })
-server.listen(process.env.PORT, () => { console.log(`[ ! ] Website is running on ${process.env.PORT}`) })
+server.listen(process.env.PORT, () => { console.log(`running on ${process.env.PORT}`) })
