@@ -1,0 +1,107 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+* {
+    color: rgb(255 255 255/1);
+    font-family: 'Poppins', sans-serif !important;
+}
+
+.text-danger {
+    color: rgb(248 98 98/1) !important;
+}
+
+.bg-danger,
+.swal-button {
+    background-color: rgb(248 98 98/1) !important;
+}
+
+.bg-success {
+    background-color: rgb(54 211 153/1) !important;
+}
+
+.btn-close {
+    color: rgb(255 255 255/1) !important;
+}
+
+.swal-text,
+.swal-title {
+    color: rgb(255 255 255/1);
+}
+
+body {
+    background-color: rgb(34 40 49/1) !important;
+}
+
+.card,
+.modal-content,
+.swal-modal {
+    border: 1px solid rgb(255 255 255/0.3);
+    background-color: rgb(34 40 49/1) !important;
+}
+
+.navbar {
+    border-bottom: 1px solid rgb(255 255 255/0.3);
+    background-color: rgb(34 40 49/1) !important;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    margin: 0;
+    -webkit-appearance: none;
+}
+
+button:focus {
+    box-shadow: none !important;
+    border-color: rgb(248 98 98/1) !important;
+}
+
+button {
+    color: rgb(255 255 255/1) !important;
+}
+
+.form-control {
+    color: rgb(255 255 255/0.3) !important;
+    box-shadow: none !important;
+    border: 1px solid rgb(255 255 255/0.3) !important;
+    background-color: rgb(34 40 49/1) !important;
+}
+
+.row {
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    flex: 1 0 100%;
+}
+
+.card-header,
+.modal,
+.modal-header,
+.swal-overlay {
+    border: none;
+    background-color: rgb(34 40 49/1) !important;
+}
+
+.navbar-brand {
+    display: flex;
+    font-size: 1.5rem;
+    font-weight: 600 !important;
+}
+
+.card-title,
+.modal-title {
+
+    display: flex;
+    font-size: 1rem;
+    justify-content: center;
+    font-weight: 600 !important;
+}
+
+.badge {
+    font-size: .85rem;
+    padding: 10px;
+}
+
+.swal-icon--success:after,
+.swal-icon--success:before,
+.swal-icon--success__hide-corners {
+    display: none;
+}
