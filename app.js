@@ -1,4 +1,3 @@
-require('dotenv').config()
 require('module-alias/register')
 
 const http = require('http')
@@ -40,4 +39,4 @@ socketIO.on('connection', socket => {
 })
 
 process.on('uncaughtException', (error) => { console.log(`[ ! ] ${error.message}`) })
-server.listen(process.env.PORT, () => { console.log(`running on ${process.env.PORT}`) })
+server.listen(8000, () => { console.log(`running on 8000`) })
