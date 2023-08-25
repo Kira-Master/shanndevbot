@@ -292,16 +292,17 @@ module.exports = async ({ client, msg, prefix, args, command }) => {
                     if (!data || !data.status || !data.result.video) return msg.reply('Error, silahkan coba lagi nanti')
 
                     for (let video of data.result.video) {
-                        await axios.get(video.url)
-                            .then(result => {
-                                console.log(video.url)
-                                if (/image/.test(result.headers['content-type'])) msg.replyImage({ url: video.url }).catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
-                                if (/video/.test(result.headers['content-type'])) msg.replyVideo({ url: video.url }).catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
-                            })
-                            .catch(() => { return msg.reply('Error, silahkan coba lagi nanti 1') })
+                        // await axios.get(video.url)
+                        //     .then(result => {
+                        //         if (/image/.test(result.headers['content-type'])) msg.replyImage({ url: video.url })
+                        //         if (/video/.test(result.headers['content-type'])) msg.replyVideo({ url: video.url })
+                        //     })
+                        //     .catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
+
+                        console.log(video)
                     }
                 })
-                .catch(() => { return msg.reply('Error, silahkan coba lagi nanti 2') })
+                .catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
 
             break
         }
