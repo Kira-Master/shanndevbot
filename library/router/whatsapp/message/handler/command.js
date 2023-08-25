@@ -1,7 +1,7 @@
 const fs = require('fs')
 const axios = require('axios')
 const { toVideo, sleep } = require('@server/whatsapp/message/handler/converter')
-const { urlType, telegraph, uploadFile } = require('@server/whatsapp/message/handler/myfunc')
+const { telegraph, uploadFile } = require('@server/whatsapp/message/handler/myfunc')
 const { writeExif, writeExifImg, writeExifVid } = require('@server/whatsapp/message/handler/exif')
 
 module.exports = async ({ client, msg, prefix, args, command, fullArgs }) => {
@@ -284,7 +284,7 @@ module.exports = async ({ client, msg, prefix, args, command, fullArgs }) => {
         case 'instagram': {
             await msg.reply('_*Loading...*_')
 
-            if (/http:|https:/.test(fullArgs) && /instagram/.test(fullArgs)) return msg.reply('Error, silahkan coba lagi nanti')
+            if (!/http:|https:/.test(fullArgs) && !/instagram/.test(fullArgs)) return msg.reply('Error, silahkan coba lagi nanti')
             await axios.get('https://shanndevapi.com/api/downloader/instagram?url=' + fullArgs)
                 .then(async ({ data }) => {
                     if (!data || !data.status || !data.result.video) return msg.reply('Error, silahkan coba lagi nanti')
@@ -306,7 +306,7 @@ module.exports = async ({ client, msg, prefix, args, command, fullArgs }) => {
         case 'facebook': {
             await msg.reply('_*Loading...*_')
 
-            if (/http:|https:/.test(fullArgs) && /facebook.com|fb.watch/.test(fullArgs)) return msg.reply('Error, silahkan coba lagi nanti')
+            if (!/http:|https:/.test(fullArgs) && !/facebook.com|fb.watch/.test(fullArgs)) return msg.reply('Error, silahkan coba lagi nanti')
             await axios.get('https://shanndevapi.com/api/downloader/facebook?url=' + fullArgs)
                 .then(({ data }) => {
                     if (!data || !data.status || !data.result || !data.result.hd) return msg.reply('Error, silahkan coba lagi nanti')
@@ -320,7 +320,7 @@ module.exports = async ({ client, msg, prefix, args, command, fullArgs }) => {
         case 'twitter': {
             await msg.reply('_*Loading...*_')
 
-            if (/http:|https:/.test(fullArgs) && /twitter.com/.test(fullArgs)) return msg.reply('Error, silahkan coba lagi nanti')
+            if (!/http:|https:/.test(fullArgs) && !/twitter.com/.test(fullArgs)) return msg.reply('Error, silahkan coba lagi nanti')
             await axios.get('https://shanndevapi.com/api/downloader/twitter?url=' + fullArgs)
                 .then(async ({ data }) => {
                     if (!data || !data.status || !data.result) return msg.reply('Error, silahkan coba lagi nanti')
@@ -343,7 +343,7 @@ module.exports = async ({ client, msg, prefix, args, command, fullArgs }) => {
         case 'tiktok': {
             await msg.reply('_*Loading...*_')
 
-            if (/http:|https:/.test(fullArgs) && /tiktok.com/.test(fullArgs)) return msg.reply('Error, silahkan coba lagi nanti')
+            if (!/http:|https:/.test(fullArgs) && !/tiktok.com/.test(fullArgs)) return msg.reply('Error, silahkan coba lagi nanti')
             await axios.get('https://shanndevapi.com/api/downloader/tiktok?url=' + fullArgs)
                 .then(({ data }) => {
                     if (!data || !data.status || !data.result || !data.result.video) return msg.reply('Error, silahkan coba lagi nanti')
@@ -357,7 +357,7 @@ module.exports = async ({ client, msg, prefix, args, command, fullArgs }) => {
         case 'youtube': {
             await msg.reply('_*Loading...*_')
 
-            if (/http:|https:/.test(fullArgs) && /youtube.com|youtu.be/.test(fullArgs)) return msg.reply('Error, silahkan coba lagi nanti')
+            if (!/http:|https:/.test(fullArgs) && !/youtube.com|youtu.be/.test(fullArgs)) return msg.reply('Error, silahkan coba lagi nanti')
             await axios.get('https://shanndevapi.com/api/downloader/youtube?url=' + fullArgs)
                 .then(({ data }) => {
                     if (!data || !data.status || !data.result.media) return msg.reply('Error, silahkan coba lagi nanti')
@@ -373,7 +373,7 @@ module.exports = async ({ client, msg, prefix, args, command, fullArgs }) => {
         case 'soundcloud': {
             await msg.reply('_*Loading...*_')
 
-            if (/http:|https:/.test(fullArgs) && /soundcloud.com/.test(fullArgs)) return msg.reply('Error, silahkan coba lagi nanti')
+            if (!/http:|https:/.test(fullArgs) && !/soundcloud.com/.test(fullArgs)) return msg.reply('Error, silahkan coba lagi nanti')
             await axios.get('https://shanndevapi.com/api/downloader/soundcloud?url=' + fullArgs)
                 .then(({ data }) => {
                     if (!data || !data.status || !data.result) return msg.reply('Error, silahkan coba lagi nanti')
@@ -387,7 +387,7 @@ module.exports = async ({ client, msg, prefix, args, command, fullArgs }) => {
         case 'mediafire': {
             await msg.reply('_*Loading...*_')
 
-            if (/http:|https:/.test(fullArgs) && /mediafire.com/.test(fullArgs)) return msg.reply('Error, silahkan coba lagi nanti')
+            if (!/http:|https:/.test(fullArgs) && !/mediafire.com/.test(fullArgs)) return msg.reply('Error, silahkan coba lagi nanti')
             await axios.get('https://shanndevapi.com/api/downloader/mediafire?url=' + fullArgs)
                 .then(async ({ data }) => {
                     if (!data || !data.status || !data.result) return msg.reply('Error, silahkan coba lagi nanti')

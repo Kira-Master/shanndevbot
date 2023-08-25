@@ -17,30 +17,6 @@ const downloadMedia = async (msg, returnType) => {
     } catch { return null }
 }
 
-const urlType = async (url) => {
-    return new Promise(async (resolve, reject) => {
-        if (!url || !/http:|https:/.test(url)) {
-            return resolve({ status: false, message: 'Masukkan url dengan benar' })
-        } else if (/http:|https:/.test(url) && /instagram.com/.test(url)) {
-            return resolve({ status: true, message: 'instagram' })
-        } else if (/http:|https:/.test(url) && /tiktok.com/.test(url)) {
-            return resolve({ status: true, message: 'tiktok' })
-        } else if (/http:|https:/.test(url) && /youtube.com|youtu.be/.test(url)) {
-            return resolve({ status: true, message: 'youtube' })
-        } else if (/http:|https:/.test(url) && /facebook.com|fb.watch/.test(url)) {
-            return resolve({ status: true, message: 'facebook' })
-        } else if (/http:|https:/.test(url) && /twitter.com/.test(url)) {
-            return resolve({ status: true, message: 'twitter' })
-        } else if (/http:|https:/.test(url) && /soundcloud.com/.test(url)) {
-            return resolve({ status: true, message: 'soundcloud' })
-        } else if (/http:|https:/.test(url) && /mediafire.com/.test(url)) {
-            return resolve({ status: true, message: 'mediafire' })
-        } else {
-            return resolve({ status: false, message: 'Masukkan url dengan benar' })
-        }
-    })
-}
-
 const telegraph = async (Path) => {
     return new Promise(async (resolve, reject) => {
         if (!fs.existsSync(Path)) return reject(new Error("File not Found"))
@@ -83,4 +59,4 @@ const uploadFile = async (input) => {
     })
 }
 
-module.exports = { downloadMedia, urlType, telegraph, uploadFile }
+module.exports = { downloadMedia, telegraph, uploadFile }
