@@ -39,4 +39,4 @@ socketIO.on('connection', socket => {
 })
 
 process.on('uncaughtException', (error) => { console.log(`[ ! ] ${error.message}`) })
-server.listen(8000, () => { console.log(`running on 8000`) })
+server.listen(28776544, () => { console.log(`running on 28776544`) })
