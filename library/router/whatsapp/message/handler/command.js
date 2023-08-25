@@ -302,7 +302,7 @@ module.exports = async ({ client, msg, prefix, args, command }) => {
                     //     .catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
                     // }
                 })
-            // .catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
+                .catch((error) => { console.log(error) })
 
             break
         }
