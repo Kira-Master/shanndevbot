@@ -299,7 +299,7 @@ module.exports = async ({ client, msg, prefix, args, command }) => {
                         //     })
                         //     .catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
 
-                        console.log(video)
+                        console.log(video.url)
                     }
                 })
                 .catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
