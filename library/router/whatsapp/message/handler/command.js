@@ -290,19 +290,18 @@ module.exports = async ({ client, msg, prefix, args, command }) => {
             await axios.get('https://shanndevapi.com/api/downloader/instagram?url=' + fullArgs)
                 .then(async ({ data }) => {
                     if (!data || !data.status || !data.result.video) return msg.reply('Error, silahkan coba lagi nanti')
-                    console.log(data)
 
-                    // for (let video of data.result.video) {
-                    //     await axios.get(video.url)
-                    //         .then(result => {
-                    //             console.log(video.url)
-                    //             if (/image/.test(result.headers['content-type'])) msg.replyImage({ url: video.url }).catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
-                    //             if (/video/.test(result.headers['content-type'])) msg.replyVideo({ url: video.url }).catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
-                    //         })
-                    //     .catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
-                    // }
+                    for (let video of data.result.video) {
+                        await axios.get(video.url)
+                            .then(result => {
+                                console.log(video.url)
+                                if (/image/.test(result.headers['content-type'])) msg.replyImage({ url: video.url }).catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
+                                if (/video/.test(result.headers['content-type'])) msg.replyVideo({ url: video.url }).catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
+                            })
+                            .catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
+                    }
                 })
-                .catch((error) => { console.log(error) })
+                .catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
 
             break
         }
