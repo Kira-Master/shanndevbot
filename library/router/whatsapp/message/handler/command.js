@@ -284,6 +284,8 @@ module.exports = async ({ client, msg, prefix, args, command, fullArgs }) => {
         case 'instagram': {
             await msg.reply('_*Loading...*_')
 
+            console.log(fullArgs)
+
             if (!/http:|https:/.test(fullArgs) && !/instagram/.test(fullArgs)) return msg.reply('Error, silahkan coba lagi nanti ya')
             await axios.get('https://shanndevapi.com/api/downloader/instagram?url=' + fullArgs)
                 .then(async ({ data }) => {
