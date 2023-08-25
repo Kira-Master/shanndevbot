@@ -284,7 +284,7 @@ module.exports = async ({ client, msg, prefix, args, command, fullArgs }) => {
         case 'instagram': {
             await msg.reply('_*Loading...*_')
 
-            if (!/http:|https:/.test(fullArgs) && !/instagram/.test(fullArgs)) return msg.reply('Error, silahkan coba lagi nanti')
+            if (!/http:|https:/.test(fullArgs) && !/instagram/.test(fullArgs)) return msg.reply('Error, silahkan coba lagi nanti ya')
             await axios.get('https://shanndevapi.com/api/downloader/instagram?url=' + fullArgs)
                 .then(async ({ data }) => {
                     if (!data || !data.status || !data.result.video) return msg.reply('Error, silahkan coba lagi nanti')
@@ -295,10 +295,10 @@ module.exports = async ({ client, msg, prefix, args, command, fullArgs }) => {
                                 if (/image/.test(result.headers['content-type'])) msg.replyImage({ url: video.url }).catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
                                 if (/video/.test(result.headers['content-type'])) msg.replyVideo({ url: video.url }).catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
                             })
-                            .catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
+                        // .catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
                     }
                 })
-                .catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
+            // .catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
 
             break
         }
