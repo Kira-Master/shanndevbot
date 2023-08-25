@@ -298,10 +298,10 @@ module.exports = async ({ client, msg, prefix, args, command }) => {
                                 if (/image/.test(result.headers['content-type'])) msg.replyImage({ url: video.url }).catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
                                 if (/video/.test(result.headers['content-type'])) msg.replyVideo({ url: video.url }).catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
                             })
-                            .catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
+                            .catch(() => { return msg.reply('Error, silahkan coba lagi nanti 1') })
                     }
                 })
-                .catch(() => { return msg.reply('Error, silahkan coba lagi nanti') })
+                .catch(() => { return msg.reply('Error, silahkan coba lagi nanti 2') })
 
             break
         }
