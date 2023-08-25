@@ -4,7 +4,9 @@ const { toVideo, sleep } = require('@server/whatsapp/message/handler/converter')
 const { telegraph, uploadFile } = require('@server/whatsapp/message/handler/myfunc')
 const { writeExif, writeExifImg, writeExifVid } = require('@server/whatsapp/message/handler/exif')
 
-module.exports = async ({ client, msg, prefix, args, command, fullArgs }) => {
+module.exports = async ({ client, msg, prefix, args, command }) => {
+    let fullArgs = args.join()
+
     switch (command) {
         case 'menu': case 'help': case 'list': {
             let menuText = `*DOWNLOAD*
