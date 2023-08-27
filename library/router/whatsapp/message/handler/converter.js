@@ -31,54 +31,12 @@ function ffmpeg(buffer, args = [], ext = '', ext2 = '') {
     })
 }
 
-/**
- * Convert Audio to Playable WhatsApp Audio
- * @param {Buffer} buffer Audio Buffer
- * @param {String} ext File Extension 
- */
-function toAudio(buffer, ext) {
-    return ffmpeg(buffer, [
-        '-vn',
-        '-ac', '2',
-        '-b:a', '128k',
-        '-ar', '44100',
-        '-f', 'mp3'
-    ], ext, 'mp3')
-}
+async function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
-/**
- * Convert Audio to Playable WhatsApp PTT
- * @param {Buffer} buffer Audio Buffer
- * @param {String} ext File Extension 
- */
-function toPTT(buffer, ext) {
-    return ffmpeg(buffer, [
-        '-vn',
-        '-c:a', 'libopus',
-        '-b:a', '128k',
-        '-vbr', 'on',
-        '-compression_level', '10'
-    ], ext, 'opus')
-}
+function toAudio(buffer, ext) { return ffmpeg(buffer, ['-vn', '-ac', '2', '-b:a', '128k', '-ar', '44100', '-f', 'mp3'], ext, 'mp3') }
 
-/**
- * Convert Audio to Playable WhatsApp Video
- * @param {Buffer} buffer Video Buffer
- * @param {String} ext File Extension 
- */
-function toVideo(buffer, ext) {
-    return ffmpeg(buffer, [
-        '-c:v', 'libx264',
-        '-c:a', 'aac',
-        '-ab', '128k',
-        '-ar', '44100',
-        '-crf', '32',
-        '-preset', 'slow'
-    ], ext, 'mp4')
-}
+function toPTT(buffer, ext) { return ffmpeg(buffer, ['-vn', '-c:a', 'libopus', '-b:a', '128k', '-vbr', 'on', '-compression_level', '10'], ext, 'opus') }
 
-async function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
+function toVideo(buffer, ext) { return ffmpeg(buffer, ['-c:v', 'libx264', '-c:a', 'aac', '-ab', '128k', '-ar', '44100', '-crf', '32', '-preset', 'slow'], ext, 'mp4') }
 
 module.exports = { toAudio, toPTT, toVideo, ffmpeg, sleep }

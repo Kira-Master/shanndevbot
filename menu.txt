@@ -1,0 +1,40 @@
+*DOWNLOAD*
+• {prefix}facebook
+• {prefix}instagram
+• {prefix}mediafire
+• {prefix}soundcloud
+• {prefix}tiktokaudio
+• {prefix}tiktokvideo
+• {prefix}youtubevideo
+• {prefix}youtubevideo
+
+*GABUT*
+• {prefix}cekanak
+• {prefix}cekmati
+• {prefix}ceknikah
+• {prefix}halah
+• {prefix}heleh
+• {prefix}hilih
+• {prefix}holoh
+• {prefix}huluh
+• {prefix}judi
+
+*GROUP*
+• {prefix}add
+• {prefix}demote
+• {prefix}kick
+• {prefix}promote
+
+*STICKER*
+• {prefix}pinterest
+• {prefix}wikimedia
+• {prefix}wikipedia
+
+*STICKER*
+• {prefix}s
+• {prefix}take
+
+*TOOLS*
+• {prefix}remini
+• {prefix}removebg
+• {prefix}ssweb
