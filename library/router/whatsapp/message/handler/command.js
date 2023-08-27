@@ -2,9 +2,13 @@ const fs = require('fs')
 const axios = require('axios')
 const cheerio = require('cheerio')
 const fetch = require('node-fetch')
+const { Client, MusicClient } = require("youtubei")
 const { downloadMedia, telegraph, uploadFile } = require('@server/whatsapp/message/handler/myfunc')
 const { toAudio, toPTT, toVideo, ffmpeg, sleep } = require('@server/whatsapp/message/handler/converter')
 const { imageToWebp, videoToWebp, writeExifImg, writeExifVid, writeExif } = require('@server/whatsapp/message/handler/exif')
+
+const ytvideo = new Client()
+const ytmusic = new MusicClient()
 
 module.exports = async ({ client, msg, prefix, args, command }) => {
     let fullArgs = args.join()
@@ -147,7 +151,7 @@ module.exports = async ({ client, msg, prefix, args, command }) => {
             break
         }
 
-        case 'youtubevideo': case 'youtubeaudio': case 'yta': case 'ytv': {
+        case 'youtubevideo': case 'youtubeaudio': case 'ytmp4': case 'ytmp3': case 'yta': case 'ytv': {
             await msg.reply(process.env.MESSAGE_LOAD)
 
             if (!fullArgs || !/https:|http:/.test(fullArgs) || !/youtube.com|youtu.be/.test(fullArgs)) return msg.reply(process.env.MESSAGE_NOURL)
@@ -158,8 +162,50 @@ module.exports = async ({ client, msg, prefix, args, command }) => {
                     let name = Date.now() + '.mp4'
                     let fileurl = (data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '1080p')) ? data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '10800p').url : (data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '720p')) ? data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '720p').url : (data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '480p')) ? data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '480p').url : (data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '360p')) ? data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '360p').url : (data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '240p')) ? data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '240p').url : data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '144p').url
 
-                    if (command === 'yta' || command === 'youtubeaudio') return msg.replyAudio({ url: fileurl })
-                    if (command === 'ytv' || command === 'youtubevideo') return msg.replyDocument({ url: fileurl }, 'video/mp4', name)
+                    let buffer = await axios.get(fileurl, { responseType: 'arraybuffer' })
+                    fs.writeFileSync(name, buffer.data)
+
+                    let filesize = await fs.statSync(name)
+
+                    if (/youtu.be/.test(fullArgs)) id = fullArgs.split('https://youtu.be/')[1].split('?')[0]
+                    if (/youtube.com/.test(fullArgs)) id = fullArgs.replace('https://www.youtube.com/watch?v=', '')
+
+                    let details = await ytvideo.getVideo(id)
+                    let thumbnail = (details.thumbnails.find(a => a.width === 1920)) ? details.thumbnails.find(a => a.width === 1920).url : (details.thumbnails.find(a => a.width === 336)) ? details.thumbnails.find(a => a.width === 336).url : (details.thumbnails.find(a => a.width === 246)) ? details.thumbnails.find(a => a.width === 246).url : (details.thumbnails.find(a => a.width === 196)) ? details.thumbnails.find(a => a.width === 196).url : details.thumbnails.find(a => a.width === 168).url
+
+                    let caption = `*[ YOUTUBE DOWNLOAD ]*
+                    
+• Title : ${details.title}
+• Size : ${(filesize.size / 1000000).toString().split('.')[0]} MB
+• Upload : ${details.uploadDate}
+• Duration : ${(details.duration / 60).toString().split('.')[0]} Menit
+
+*Harap tunggu sebentar, file anda akan segera dikirim*`
+
+                    await msg.replyImage({ url: thumbnail }, caption)
+
+                    if ((filesize.size / 1000000) >= 100) {
+                        if (command === 'yta' || command === 'ytmp3' || command === 'youtubeaudio') {
+                            let newbuffer = await fs.readFileSync(name)
+                            let newname = Date.now() + '.mp3'
+
+                            let filebuffer = await toAudio(newbuffer, 'mp3')
+                            await fs.writeFileSync(newname, filebuffer)
+
+                            fs.unlinkSync(name)
+
+                            return msg.replyDocument({ url: newname }, 'audio/mp3', newname).then(() => { fs.unlinkSync(newname) }).catch(() => { fs.unlinkSync(newname) })
+                        } else if (command === 'ytv' || command === 'ytmp4' || command === 'youtubevideo') {
+                            return msg.replyDocument({ url: newname }, 'video/mp4', newname).then(() => { fs.unlinkSync(newname) }).catch(() => { fs.unlinkSync(newname) })
+                        }
+                    } else {
+                        if (command === 'yta' || command === 'ytmp3' || command === 'youtubeaudio') {
+                            return msg.replyAudio({ url: name }).then(() => { fs.unlinkSync(name) }).catch(() => { fs.unlinkSync(name) })
+                        } else if (command === 'ytv' || command === 'ytmp4' || command === 'youtubevideo') {
+                            return msg.replyVideo({ url: name }).then(() => { fs.unlinkSync(name) }).catch(() => { fs.unlinkSync(name) })
+
+                        }
+                    }
                 })
                 .catch(() => { return msg.reply(process.env.MESSAGE_ERROR) })
 
