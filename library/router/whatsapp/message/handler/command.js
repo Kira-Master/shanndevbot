@@ -1,17 +1,19 @@
 const fs = require('fs')
 const axios = require('axios')
+const yts = require('yt-search')
 const cheerio = require('cheerio')
 const fetch = require('node-fetch')
+const request = require('request')
 const { Client, MusicClient } = require("youtubei")
-const { downloadMedia, telegraph, uploadFile } = require('@server/whatsapp/message/handler/myfunc')
 const { toAudio, toPTT, toVideo, ffmpeg, sleep } = require('@server/whatsapp/message/handler/converter')
+const { downloadMedia, telegraph, uploadFile, bytesToSize } = require('@server/whatsapp/message/handler/myfunc')
 const { imageToWebp, videoToWebp, writeExifImg, writeExifVid, writeExif } = require('@server/whatsapp/message/handler/exif')
 
 const ytvideo = new Client()
 const ytmusic = new MusicClient()
 
 module.exports = async ({ client, msg, prefix, args, command }) => {
-    let fullArgs = args.join()
+    let fullArgs = args.join(" ")
 
     switch (command) {
         case 'menu': case 'help': case 'list': {
@@ -22,7 +24,7 @@ module.exports = async ({ client, msg, prefix, args, command }) => {
         }
 
         // ========== [ DOWNLOAD ] ========== \\
-        case 'facebook': case 'fb': {
+        case 'facebook': case 'fb': case 'fbdl': {
             await msg.reply(process.env.MESSAGE_LOAD)
 
             if (!fullArgs || !/https:|http:/.test(fullArgs) || !/facebook.com|fb.watch/.test(fullArgs)) return msg.reply(process.env.MESSAGE_NOURL)
@@ -39,7 +41,7 @@ module.exports = async ({ client, msg, prefix, args, command }) => {
             break
         }
 
-        case 'instagram': case 'ig': {
+        case 'instagram': case 'ig': case 'igdl': {
             await msg.reply(process.env.MESSAGE_LOAD)
 
             if (!fullArgs || !/https:|https:/.test(fullArgs) || !/instagram.com/.test(fullArgs)) return msg.reply(process.env.MESSAGE_NOURL)
@@ -101,24 +103,42 @@ module.exports = async ({ client, msg, prefix, args, command }) => {
             break
         }
 
-        case 'tiktokvideo': case 'tiktokaudio': case 'ttmp4': case 'ttmp3': {
+        case 'tiktokvideo': case 'tiktokaudio': case 'ttmp4': case 'ttmp3': case 'ttv': case 'tta': {
             await msg.reply(process.env.MESSAGE_LOAD)
 
             if (!fullArgs || !/https:|https:/.test(fullArgs) || !/tiktok.com/.test(fullArgs)) return msg.reply(process.env.MESSAGE_NOURL)
-            await axios.get('https://tikmate.cc/analyze?url=' + fullArgs)
-                .then(({ data }) => {
-                    if (!data || data.error) return msg.reply(process.env.MESSAGE_ERROR)
-                    let file = data.formats.video.find(a => a.fileType === 'mp4')
 
-                    if (command === 'ttmp4' || command === 'tiktokvideo') return msg.replyVideo({ url: file.url })
-                    if (command === 'ttmp3' || command === 'tiktokaudio') return msg.replyAudio({ url: file.url })
+            let formdata = new URLSearchParams({ url: fullArgs })
+            await fetch('https://api.tikmate.app/api/lookup', { method: 'POST', body: formdata })
+                .then(async (result) => {
+                    let json = await result.json()
+                    if (!json || !json.success) return msg.reply(process.env.MESSAGE_ERROR)
+
+                    let fileurl = `https://tikmate.app/download/${json.token}/${json.id}.mp4?hd=1`
+                    let filecaption = `*[ TIKTOK DOWNLOAD ]*
+
+• ID : ${json.id}
+• Username : ${json.author_id}
+• Nickname : ${json.author_name}
+• Upload : ${json.create_time}
+• Like : ${json.like_count}
+• Share : ${json.share_count}
+• Comment : ${json.comment_count}
+
+_*Harap tunggu sebentar, file anda akan segera dikirim*_`
+
+                    await msg.replyImage({ url: json.author_avatar }, filecaption)
+                    await sleep(2000)
+
+                    if (command === 'ttmp3' || command === 'tta' || command === 'tiktokaudio') return msg.replyAudio({ url: fileurl })
+                    if (command === 'ttmp4' || command === 'ttv' || command === 'tiktokvideo') return msg.replyVideo({ url: fileurl })
                 })
                 .catch(() => { return msg.reply(process.env.MESSAGE_ERROR) })
 
             break
         }
 
-        case 'twitter': {
+        case 'twitter': case 'twitterdl': case 'twdl': {
             await msg.reply(process.env.MESSAGE_LOAD)
 
             if (!fullArgs || !/https:|https:/.test(fullArgs) || !/twitter.com/.test(fullArgs)) return msg.reply(process.env.MESSAGE_NOURL)
@@ -151,61 +171,85 @@ module.exports = async ({ client, msg, prefix, args, command }) => {
             break
         }
 
-        case 'youtubevideo': case 'youtubeaudio': case 'ytmp4': case 'ytmp3': case 'yta': case 'ytv': {
+        case 'youtubevideo': case 'ytmp4': case 'ytv': {
             await msg.reply(process.env.MESSAGE_LOAD)
 
             if (!fullArgs || !/https:|http:/.test(fullArgs) || !/youtube.com|youtu.be/.test(fullArgs)) return msg.reply(process.env.MESSAGE_NOURL)
-            await axios.post('https://video-downloader.optizord.com/wp-json/aio-dl/video-data/', { url: fullArgs, token: 'f46b50094b28d24a8dbb563979b2326e021017d334b972393b10d06c2e1f9344' })
+
+            let tokenload = await axios.get('https://video-downloader.optizord.com')
+            let $ = cheerio.load(tokenload.data)
+            let token = $('input[name="token"]').val()
+
+            await axios.post('https://video-downloader.optizord.com/wp-json/aio-dl/video-data/', { url: fullArgs, token })
                 .then(async ({ data }) => {
                     if (!data || !data.medias) return msg.reply(process.env.MESSAGE_ERROR)
-
-                    let name = Date.now() + '.mp4'
                     let fileurl = (data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '1080p')) ? data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '10800p').url : (data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '720p')) ? data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '720p').url : (data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '480p')) ? data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '480p').url : (data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '360p')) ? data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '360p').url : (data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '240p')) ? data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '240p').url : data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '144p').url
-
-                    let buffer = await axios.get(fileurl, { responseType: 'arraybuffer' })
-                    fs.writeFileSync(name, buffer.data)
-
-                    let filesize = await fs.statSync(name)
 
                     if (/youtu.be/.test(fullArgs)) id = fullArgs.split('https://youtu.be/')[1].split('?')[0]
                     if (/youtube.com/.test(fullArgs)) id = fullArgs.replace('https://www.youtube.com/watch?v=', '')
 
-                    let details = await ytvideo.getVideo(id)
-                    let thumbnail = (details.thumbnails.find(a => a.width === 1920)) ? details.thumbnails.find(a => a.width === 1920).url : (details.thumbnails.find(a => a.width === 336)) ? details.thumbnails.find(a => a.width === 336).url : (details.thumbnails.find(a => a.width === 246)) ? details.thumbnails.find(a => a.width === 246).url : (details.thumbnails.find(a => a.width === 196)) ? details.thumbnails.find(a => a.width === 196).url : details.thumbnails.find(a => a.width === 168).url
-
+                    let details = await yts({ videoId: id })
                     let caption = `*[ YOUTUBE DOWNLOAD ]*
-                    
+
+• ID : ${details.videoId}
 • Title : ${details.title}
-• Size : ${(filesize.size / 1000000).toString().split('.')[0]} MB
-• Upload : ${details.uploadDate}
-• Duration : ${(details.duration / 60).toString().split('.')[0]} Menit
+• Size : ${data.medias.find(a => a.url === fileurl).formattedSize}
+• Quality : ${data.medias.find(a => a.url === fileurl).quality}
+• Duration : ${details.timestamp}
+• Upload : ${details.ago}
+• Views : ${details.views}
 
-*Harap tunggu sebentar, file anda akan segera dikirim*`
+_*Harap tunggu sebentar, file anda akan segera dikirim*_`
 
-                    await msg.replyImage({ url: thumbnail }, caption)
+                    await msg.replyImage({ url: details.thumbnail }, caption)
 
-                    if ((filesize.size / 1000000) >= 100) {
-                        if (command === 'yta' || command === 'ytmp3' || command === 'youtubeaudio') {
-                            let newbuffer = await fs.readFileSync(name)
-                            let newname = Date.now() + '.mp3'
+                    if ((parseInt(data.medias.find(a => a.url === fileurl).size) / 1000000) >= 100) {
+                        let fileurlnew = await axios.get('https://tinyurl.com/api-create.php?url=' + fileurl)
+                        return msg.reply(`*Ukuran file terlalu besar*\nKamu depat mendownload nya dengan klik link dibawah, link hanya bisa dibuka sekali saja.\n\n${fileurlnew.data}`)
+                    } else if ((parseInt(data.medias.find(a => a.url === fileurl).size) / 1000000) <= 100) return msg.replyVideo({ url: fileurl })
+                })
+                .catch(() => { return msg.reply(process.env.MESSAGE_ERROR) })
 
-                            let filebuffer = await toAudio(newbuffer, 'mp3')
-                            await fs.writeFileSync(newname, filebuffer)
+            break
+        }
 
-                            fs.unlinkSync(name)
+        case 'youtubeaudio': case 'ytmp3': case 'yta': {
+            await msg.reply(process.env.MESSAGE_LOAD)
 
-                            return msg.replyDocument({ url: newname }, 'audio/mp3', newname).then(() => { fs.unlinkSync(newname) }).catch(() => { fs.unlinkSync(newname) })
-                        } else if (command === 'ytv' || command === 'ytmp4' || command === 'youtubevideo') {
-                            return msg.replyDocument({ url: newname }, 'video/mp4', newname).then(() => { fs.unlinkSync(newname) }).catch(() => { fs.unlinkSync(newname) })
-                        }
-                    } else {
-                        if (command === 'yta' || command === 'ytmp3' || command === 'youtubeaudio') {
-                            return msg.replyAudio({ url: name }).then(() => { fs.unlinkSync(name) }).catch(() => { fs.unlinkSync(name) })
-                        } else if (command === 'ytv' || command === 'ytmp4' || command === 'youtubevideo') {
-                            return msg.replyVideo({ url: name }).then(() => { fs.unlinkSync(name) }).catch(() => { fs.unlinkSync(name) })
+            if (!fullArgs || !/https:|http:/.test(fullArgs) || !/youtube.com|youtu.be/.test(fullArgs)) return msg.reply(process.env.MESSAGE_NOURL)
 
-                        }
-                    }
+            let tokenload = await axios.get('https://video-downloader.optizord.com')
+            let $ = cheerio.load(tokenload.data)
+            let token = $('input[name="token"]').val()
+
+            await axios.post('https://video-downloader.optizord.com/wp-json/aio-dl/video-data/', { url: fullArgs, token })
+                .then(async ({ data }) => {
+                    if (!data || !data.medias) return msg.reply(process.env.MESSAGE_ERROR)
+                    let fileurl = data.medias.find(a => a.extension === 'mp3')
+
+                    if (/youtu.be/.test(fullArgs)) id = fullArgs.split('https://youtu.be/')[1].split('?')[0]
+                    if (/youtube.com/.test(fullArgs)) id = fullArgs.replace('https://www.youtube.com/watch?v=', '')
+
+                    let details = await yts({ videoId: id })
+                    let caption = `*[ YOUTUBE DOWNLOAD ]*
+
+• ID : ${details.videoId}
+• Title : ${details.title}
+• Size : ${fileurl.formattedSize}
+• Quality : ${fileurl.quality}
+• Duration : ${details.timestamp}
+• Upload : ${details.ago}
+• Views : ${details.views}
+
+_*Harap tunggu sebentar, file anda akan segera dikirim*_`
+
+                    await msg.replyImage({ url: details.thumbnail }, caption)
+
+                    if ((parseInt(fileurl.size) / 1000000) >= 100) {
+                        let fileurlnew = await axios.get('https://tinyurl.com/api-create.php?url=' + fileurl)
+                        return msg.reply(`*Ukuran file terlalu besar*\nKamu depat mendownload nya dengan klik link dibawah, link hanya bisa dibuka sekali saja.\n\n${fileurlnew.data}`)
+                    } else if ((parseInt(fileurl.size) / 1000000) <= 100) return msg.replyAudio({ url: fileurl })
+
                 })
                 .catch(() => { return msg.reply(process.env.MESSAGE_ERROR) })
 
@@ -266,7 +310,58 @@ module.exports = async ({ client, msg, prefix, args, command }) => {
         }
 
         // ========== [ SEARCH ] ========== \\
-        case 'pinterest': {
+        case 'play': {
+            await msg.reply(process.env.MESSAGE_LOAD)
+            if (!fullArgs) return msg.reply(`Contoh penggunaan:\n${prefix + command} query --options\n\nOptions:\n--doc\n--video`)
+
+            let options = (fullArgs.split(' --')) ? fullArgs.split(' --')[1] : undefined
+            let query = (options) ? fullArgs.split(' --')[0] : fullArgs
+
+            let file = await yts({ query })
+            if (!file || !file.videos || !file.videos.length) return msg.reply(`Video ${query} tidak ditemukan`)
+
+            let tokenload = await axios.get('https://video-downloader.optizord.com')
+            let $ = cheerio.load(tokenload.data)
+            let token = $('input[name="token"]').val()
+
+            await axios.post('https://video-downloader.optizord.com/wp-json/aio-dl/video-data/', { url: file.videos[0].url, token })
+                .then(async ({ data }) => {
+                    if (!data || !data.medias) return msg.reply(process.env.MESSAGE_ERROR)
+
+                    let fileurl = data.medias.find(a => a.extension === 'mp3').url
+                    if (options === 'video') fileurl = (data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '1080p')) ? data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '10800p').url : (data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '720p')) ? data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '720p').url : (data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '480p')) ? data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '480p').url : (data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '360p')) ? data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '360p').url : (data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '240p')) ? data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '240p').url : data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '144p').url
+
+                    let caption = `*[ YOUTUBE SEARCH ]*
+
+• ID : ${file.videos[0].videoId}
+• Title : ${file.videos[0].title}
+• Size : ${data.medias.find(a => a.url === fileurl).formattedSize}
+• Quality : ${data.medias.find(a => a.url === fileurl).quality}
+• Duration : ${file.videos[0].timestamp}
+• Upload : ${file.videos[0].ago}
+• Views : ${file.videos[0].views}
+
+_*Harap tunggu sebentar, file anda akan segera dikirim*_`
+
+                    await msg.replyImage({ url: file.videos[0].thumbnail }, caption)
+
+                    if ((parseInt(data.medias.find(a => a.url === fileurl).size) / 1000000) >= 100) {
+                        let fileurlnew = await axios.get('https://tinyurl.com/api-create.php?url=' + fileurl)
+                        return msg.reply(`*Ukuran file terlalu besar*\nKamu depat mendownload nya dengan klik link dibawah, link hanya bisa dibuka sekali saja.\n\n${fileurlnew.data}`)
+                    } else {
+                        if (options === 'doc') {
+                            return msg.replyDocument({ url: fileurl }, 'audio/mp4', file.videos[0].title + '.mp3')
+                        } else if (options === 'video') {
+                            return msg.replyVideo({ url: fileurl })
+                        } else return msg.replyAudio({ url: fileurl })
+                    }
+                })
+                .catch(() => { return msg.reply(process.env.MESSAGE_ERROR) })
+
+            break
+        }
+
+        case 'pinterest': case 'pinterestsearch': {
             await msg.reply(process.env.MESSAGE_LOAD)
             if (!fullArgs) return msg.reply(process.env.MESSAGE_NOQUERY)
 
@@ -331,7 +426,27 @@ module.exports = async ({ client, msg, prefix, args, command }) => {
         }
 
         // ========== [ STICKER ] ========== \\
-        case 'sticker': case 'stiker': case 's': {
+        case 'attp': {
+            let getid = await axios.get('https://id.bloggif.com/text')
+            let id = cheerio.load(getid.data)('#content > form').attr('action')
+            let options = { method: "POST", url: `https://id.bloggif.com${id}`, headers: { "content-type": 'application/x-www-form-urlencoded', "user-agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36' }, formData: { target: 1, text: fullArgs, glitter_id: Math.floor(Math.random() * 2821), font_id: 'genuine', size: 90, bg_color: 'FFFFFF', transparent: 1, border_color: '000000', border_width: 1, shade_color: '000000', shade_width: 1, angle: 0, text_align: 'center' } }
+
+            await request(options, async (error, response, body) => {
+                if (error) return msg.reply(process.env.MESSAGE_ERROR)
+
+                let $ = cheerio.load(body)
+                let url = $('div#content > div.box > a').attr('href')
+
+                let { data } = await axios.get('https://id.bloggif.com' + url, { responseType: 'arraybuffer' })
+                let fileexif = await writeExifVid(data, { packname: 'Bot', author: 'Whatsapp' })
+
+                msg.replySticker({ url: fileexif }).catch(() => { return msg.reply(process.env.MESSAGE_ERROR) })
+            })
+
+            break
+        }
+
+        case 'sticker': case 'stiker': case 's': case 'stick': {
             let [packname, author] = fullArgs ? fullArgs.split('|') : 'Bot|Whatsapp'.split('|')
 
             if (msg.typeCheck.isImage || msg.typeCheck.isQuotedImage) {
@@ -349,7 +464,7 @@ module.exports = async ({ client, msg, prefix, args, command }) => {
             break
         }
 
-        case 'take': {
+        case 'take': case 'hm': case 'ambil': {
             let [packname, author] = fullArgs ? fullArgs.split('|') : 'Bot|Whatsapp'.split('|')
 
             if (msg.typeCheck.isQuotedSticker) {
@@ -362,8 +477,33 @@ module.exports = async ({ client, msg, prefix, args, command }) => {
             break
         }
 
+        case 'ttp': {
+            let options = { method: 'POST', url: `https://www.picturetopeople.org/p2p/text_effects_generator.p2p/transparent_text_effect`, headers: { "Content-Type": "application/x-www-form-urlencoded", "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36", "Cookie": "_ga=GA1.2.1667267761.1655982457; _gid=GA1.2.77586860.1655982457; __gads=ID=c5a896288a559a38-224105aab0d30085:T=1655982456:RT=1655982456:S=ALNI_MbtHcmgQmVUZI-a2agP40JXqeRnyQ; __gpi=UID=000006149da5cba6:T=1655982456:RT=1655982456:S=ALNI_MY1RmQtva14GH-aAPr7-7vWpxWtmg; _gat_gtag_UA_6584688_1=1" }, formData: { 'TextToRender': fullArgs, 'FontSize': '100', 'Margin': '30', 'LayoutStyle': '0', 'TextRotation': '0', 'TextColor': 'ffffff', 'TextTransparency': '0', 'OutlineThickness': '3', 'OutlineColor': '000000', 'FontName': 'Lekton', 'ResultType': 'view' } }
+            await request(options, async (error, response, body) => {
+                if (error) return msg.reply(process.env.MESSAGE_ERROR)
+
+                let $ = cheerio.load(body)
+                let { data } = await axios.get('https://www.picturetopeople.org' + $('.result_img').attr('src'), { responseType: 'arraybuffer' })
+                let fileexif = await writeExifImg(data, { packname: 'Bot', author: 'Whatsapp' })
+
+                return msg.replySticker({ url: fileexif })
+            })
+
+            break
+        }
+
         // ========== [ TOOLS ] ========== \\
-        case 'remini': {
+        case 'ebase64': case 'dbase64': {
+            if (!fullArgs) return msg.reply(process.env.MESSAGE_NOQUERY)
+            if (fullArgs.length >= 2048) return msg.reply('Maximal 2.048 String!')
+
+            if (command === 'ebase64') return msg.reply(Buffer.from(fullArgs).toString('base64'))
+            if (command === 'dbase64') return msg.reply(Buffer.from(fullArgs, 'base64').toString('ascii'))
+
+            break
+        }
+
+        case 'remini': case 'hd': {
             await msg.reply(process.env.MESSAGE_LOAD)
 
             if (msg.typeCheck.isImage || msg.typeCheck.isQuotedImage) {
@@ -385,7 +525,7 @@ module.exports = async ({ client, msg, prefix, args, command }) => {
             break
         }
 
-        case 'removebg': {
+        case 'removebg': case 'removebackground': {
             await msg.reply(process.env.MESSAGE_LOAD)
 
             if (msg.typeCheck.isImage || msg.typeCheck.isQuotedImage) {
@@ -407,7 +547,7 @@ module.exports = async ({ client, msg, prefix, args, command }) => {
             break
         }
 
-        case 'ssweb': {
+        case 'ssweb': case 'screenshootweb': {
             await msg.reply(process.env.MESSAGE_LOAD)
 
             if (!fullArgs || !/https:|http:/.test(fullArgs)) return msg.reply(process.env.MESSAGE_NOURL)
@@ -422,6 +562,59 @@ module.exports = async ({ client, msg, prefix, args, command }) => {
                     return msg.replyImage({ url: fileurl }).then(() => { fs.unlinkSync(fileurl) }).catch(() => { fs.unlinkSync(fileurl) })
                 })
                 .catch(() => { return msg.reply(process.env.MESSAGE_ERROR) })
+
+            break
+        }
+
+        case 'shortlink': case 'slink': {
+            if (!fullArgs || !fullArgs.startsWith('http')) return msg.reply(`Contoh penggunaan: \n${prefix + command} https://domainku.com\n${prefix + command} https://domainku.com --alias domainku28`)
+
+            let alias = (fullArgs.split(' --alias ')) ? fullArgs.split(' --alias ')[1] : null
+            let domain = (fullArgs.split(' --alias ')) ? fullArgs.split(' --alias ')[0] : fullArgs
+
+            await axios.get('https://tinyurl.com/api-create.php?url=' + domain + '&alias=' + alias)
+                .then(({ data }) => { return msg.reply(data) })
+                .catch(() => { return msg.reply(process.env.MESSAGE_ERROR) })
+
+            break
+        }
+
+        case 'tourl': {
+            await msg.reply(process.env.MESSAGE_LOAD)
+
+            if (msg.typeCheck.isImage || msg.typeCheck.isQuotedImage) {
+                let path = Date.now() + '.jpg'
+                let file = (await msg.download('buffer') || (msg.quoted && (await msg.quoted.download('buffer'))))
+
+                await fs.writeFileSync(path, file)
+                let filesize = await fs.statSync(path)
+
+                if ((filesize.size / 1000000) >= 5) {
+                    fs.unlinkSync(path)
+                    return msg.reply('Maksimal upload 5 MB')
+                } else {
+                    let fileurl = await telegraph(path)
+
+                    await fs.unlinkSync(path)
+                    return msg.reply(fileurl)
+                }
+            } else if (msg.typeCheck.isVideo || msg.typeCheck.isQuotedVideo) {
+                let path = Date.now() + '.mp4'
+                let file = (await msg.download('buffer') || (msg.quoted && (await msg.quoted.download('buffer'))))
+
+                await fs.writeFileSync(path, file)
+                let filesize = await fs.statSync(path)
+
+                if ((filesize.size / 1000000) >= 5) {
+                    fs.unlinkSync(path)
+                    return msg.reply('Maksimal upload 5 mb')
+                } else {
+                    let fileurl = await telegraph(path)
+
+                    await fs.unlinkSync(path)
+                    return msg.reply(fileurl)
+                }
+            } else return msg.reply(process.env.MESSAGE_NOMEDIA)
 
             break
         }

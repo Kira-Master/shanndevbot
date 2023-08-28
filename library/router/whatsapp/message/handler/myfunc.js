@@ -59,4 +59,16 @@ const uploadFile = async (input) => {
     })
 }
 
-module.exports = { downloadMedia, telegraph, uploadFile }
+const bytesToSize = async (bytes) => {
+    return new Promise((resolve, reject) => {
+        const sizes = ["Bytes", "KB", "MB", "GB", "TB"]
+        if (bytes === 0) return resolve('0 MB')
+
+        const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)), 10)
+        if (i === 0) resolve(`${bytes} ${sizes[i]}`)
+
+        resolve(`${(bytes / 1024 ** i).toFixed(1)} ${sizes[i]}`)
+    });
+}
+
+module.exports = { downloadMedia, telegraph, uploadFile, bytesToSize }

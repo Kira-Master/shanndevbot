@@ -25,16 +25,23 @@
 • {prefix}kick
 • {prefix}promote
 
-*STICKER*
+*SEARCH*
 • {prefix}pinterest
+• {prefix}play
 • {prefix}wikimedia
 • {prefix}wikipedia
 
 *STICKER*
-• {prefix}s
+• {prefix}attp
+• {prefix}stiker
 • {prefix}take
+• {prefix}ttp
 
 *TOOLS*
+• {prefix}ebase64
+• {prefix}dbase64
 • {prefix}remini
 • {prefix}removebg
 • {prefix}ssweb
+• {prefix}shortlink
+• {prefix}tourl
