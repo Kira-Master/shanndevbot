@@ -13,30 +13,30 @@ const connectWhatsapp = async (sender, socket) => {
     client.ev.on('connection.update', ({ lastDisconnect, connection, qr }) => {
         if (qr) {
             qrcode.toDataURL(qr, (error, result) => {
-                if (error || !result) return socket.emit('message', 'Gagal mendapatkan qr, silahkan restart server')
-                return socket.emit('qr-code', { message: 'QR Code received, scan please!', result })
+                if (error || !result && socket) return socket.emit('message', 'Gagal mendapatkan qr, silahkan restart server')
+                if (socket) return socket.emit('qr-code', { message: 'QR Code received, scan please!', result })
             })
         }
 
         if (connection) {
             if (connection === 'connecting') {
-                return socket.emit('message', 'Connecting...')
+                if (socket) return socket.emit('message', 'Connecting...')
             } else if (connection === 'close') {
                 let reason = new Boom(lastDisconnect.error).output.statusCode
 
                 if (reason === DisconnectReason.restartRequired) {
                     connectWhatsapp(sender, socket)
-                    return socket.emit('message', 'Restart required, Restarting...')
+                    if (socket) return socket.emit('message', 'Restart required, Restarting...')
                 } else if (reason === DisconnectReason.connectionLost) {
                     connectWhatsapp(sender, socket)
-                    return socket.emit('message', 'Restart required, Restarting...')
+                    if (socket) return socket.emit('message', 'Restart required, Restarting...')
                 } else {
-                    return socket.emit('message', 'Server Disconnect, Hapus session dan scan ulang')
+                    if (socket) return socket.emit('message', 'Server Disconnect, Hapus session dan scan ulang')
                 }
             } else if (connection === 'open') {
-                return socket.emit('server-connected', 'Whatsapp is Ready to use')
+                if (socket) return socket.emit('server-connected', 'Whatsapp is Ready to use')
             } else {
-                return socket.emit('message', 'Server Disconnect, Hapus session dan scan ulang')
+                if (socket) return socket.emit('message', 'Server Disconnect, Hapus session dan scan ulang')
             }
         }
     })
