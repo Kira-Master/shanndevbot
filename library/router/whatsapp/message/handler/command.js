@@ -9,7 +9,6 @@ const { downloadMedia, telegraph, uploadFile, bytesToSize, lolhuman } = require(
 const { imageToWebp, videoToWebp, writeExifImg, writeExifVid, writeExif } = require('@server/whatsapp/message/handler/exif')
 
 const _collection = new Map()
-const _family100 = require('@db/game/family100.json')
 
 module.exports = async ({ client, msg, prefix, args, command }) => {
     let fullArgs = args.join(" ")
