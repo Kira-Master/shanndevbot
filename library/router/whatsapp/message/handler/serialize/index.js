@@ -1,4 +1,4 @@
-const { downloadMedia } = require('./myfunc')
+const { downloadMedia } = require('../myfunc')
 const { getContentType } = require('@whiskeysockets/baileys')
 const collector = require('@server/whatsapp/message/handler/collector')
 

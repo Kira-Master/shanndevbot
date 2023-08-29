@@ -1,5 +1,6 @@
 const fs = require('fs')
 const axios = require('axios')
+const fetch = require('node-fetch')
 const BodyForm = require('form-data')
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys')
 
@@ -71,4 +72,15 @@ const bytesToSize = async (bytes) => {
     });
 }
 
-module.exports = { downloadMedia, telegraph, uploadFile, bytesToSize }
+const lolhuman = async (formdata) => {
+    return new Promise(async (resolve, reject) => {
+        await axios.get('https://api.lolhuman.xyz/api/' + formdata + '&apikey=' + process.env.APIKEY)
+            .then(async ({ data }) => {
+                if (!data || data.status !== 200) return resolve({ status: 500 })
+                return resolve(data.result)
+            })
+            .catch(() => { return resolve({ status: 500 }) })
+    })
+}
+
+module.exports = { downloadMedia, telegraph, uploadFile, bytesToSize, lolhuman }

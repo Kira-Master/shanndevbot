@@ -37,6 +37,7 @@
     "yt-search": "^2.10.4"
   },
   "_moduleAliases": {
+    "@db": "library/db",
     "@server": "library/router"
   }
 }

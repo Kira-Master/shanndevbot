@@ -1,5 +1,5 @@
 const { EventEmitter } = require('events')
-const { MessageUpdateType } = require('@whiskeysockets/baileys')
+const { MessageUpdateType, WAMessage, WASocket, getContentType } = require('@whiskeysockets/baileys')
 
 class MessageCollector extends EventEmitter {
     /**
@@ -13,7 +13,7 @@ class MessageCollector extends EventEmitter {
     options
 
     /**
-     * @type { import('@libs/utils/serialize').Serialize }
+     * @type { import('@server/whatsapp/message/handler/serialize').Serialize }
      */
     msg
 
@@ -43,15 +43,18 @@ class MessageCollector extends EventEmitter {
         if (message.key && message.key.remoteJid === 'status@broadcast') return
         if (!message.message) return
 
-        const msg = await require('@libs/utils/serialize').serialize(message, this.client)
+        const serialize = require('@server/whatsapp/message/handler/serialize')
+        const msg = await serialize(message, this.client)
 
         if (this.msg.from !== msg.from) return
         if (typeof this.options.filter === 'string') {
             this.options.filter = new RegExp(this.options.filter)
         }
+
         if (this.options.filter.test(msg.body?.toLowerCase())) {
             this.emit('collect', msg)
             this.countMessage++
+
             if (this.countMessage >= this.options.max) {
                 return this.stop('limit')
             }

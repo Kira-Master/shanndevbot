@@ -9,6 +9,8 @@
 • {prefix}youtubevideo
 
 *GABUT*
+• {prefix}asahotak
+• {prefix}caklontong
 • {prefix}cekanak
 • {prefix}cekmati
 • {prefix}ceknikah
@@ -18,12 +20,51 @@
 • {prefix}holoh
 • {prefix}huluh
 • {prefix}judi
+• {prefix}siapakahaku
+• {prefix}tebakgambar
+• {prefix}tebakkata
+• {prefix}tebaklirik
 
 *GROUP*
 • {prefix}add
+• {prefix}closegroup
 • {prefix}demote
 • {prefix}kick
+• {prefix}leavegroup
+• {prefix}linkgroup
+• {prefix}opengroup
+• {prefix}setsubjek
+• {prefix}setdeskripsi
 • {prefix}promote
+
+*PHOTOOXY*
+• {prefix}arcade8bit
+• {prefix}battlefield4
+• {prefix}burnpaper
+• {prefix}carvedwood
+• {prefix}coffe
+• {prefix}cup
+• {prefix}cup1
+• {prefix}fallleaves
+• {prefix}flamming
+• {prefix}golderrose
+• {prefix}harrypotter
+• {prefix}lovemessage
+• {prefix}nature3d
+• {prefix}ptiktok
+• {prefix}pubg
+• {prefix}romance
+• {prefix}shadow
+• {prefix}smoke
+• {prefix}summernature
+• {prefix}undergrass
+
+*RANDOM TEXT*
+• {prefix}ceritahorror
+• {prefix}ceritapendek
+• {prefix}quotes
+• {prefix}quotesnime
+• {prefix}quotesislami
 
 *SEARCH*
 • {prefix}pinterest
@@ -37,11 +78,42 @@
 • {prefix}take
 • {prefix}ttp
 
+*TEXT PRO*
+• {prefix}avenger
+• {prefix}blackpink
+• {prefix}bloodfrosted
+• {prefix}bokeh
+• {prefix}box3d
+• {prefix}breakwall
+• {prefix}cloud
+• {prefix}coolgravity
+• {prefix}deluxesilver
+• {prefix}fireworksparkle
+• {prefix}futureneon
+• {prefix}glitch
+• {prefix}greenneon
+• {prefix}halloween
+• {prefix}holographic
+• {prefix}horrorblood
+• {prefix}icecold
+• {prefix}impressiveglitch
+• {prefix}jokerlogo
+• {prefix}sliced
+• {prefix}lionlogo
+• {prefix}luxury
+• {prefix}magma
+• {prefix}marvelstudio
+• {prefix}metaldark
+
 *TOOLS*
 • {prefix}ebase64
 • {prefix}dbase64
+• {prefix}jadianime
+• {prefix}ocr
 • {prefix}remini
 • {prefix}removebg
 • {prefix}ssweb
 • {prefix}shortlink
+• {prefix}shortlink2
+• {prefix}shortlink3
 • {prefix}tourl

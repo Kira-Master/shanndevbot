@@ -1,16 +1,15 @@
 const fs = require('fs')
 const axios = require('axios')
 const yts = require('yt-search')
+const request = require('request')
 const cheerio = require('cheerio')
 const fetch = require('node-fetch')
-const request = require('request')
-const { Client, MusicClient } = require("youtubei")
 const { toAudio, toPTT, toVideo, ffmpeg, sleep } = require('@server/whatsapp/message/handler/converter')
-const { downloadMedia, telegraph, uploadFile, bytesToSize } = require('@server/whatsapp/message/handler/myfunc')
+const { downloadMedia, telegraph, uploadFile, bytesToSize, lolhuman } = require('@server/whatsapp/message/handler/myfunc')
 const { imageToWebp, videoToWebp, writeExifImg, writeExifVid, writeExif } = require('@server/whatsapp/message/handler/exif')
 
-const ytvideo = new Client()
-const ytmusic = new MusicClient()
+const _collection = new Map()
+const _family100 = require('@db/game/family100.json')
 
 module.exports = async ({ client, msg, prefix, args, command }) => {
     let fullArgs = args.join(" ")
@@ -125,7 +124,7 @@ module.exports = async ({ client, msg, prefix, args, command }) => {
 • Share : ${json.share_count}
 • Comment : ${json.comment_count}
 
-_*Harap tunggu sebentar, file anda akan segera dikirim*_`
+_*Harap tunggu sebentar, permintaan anda akan segera dikirim*_`
 
                     await msg.replyImage({ url: json.author_avatar }, filecaption)
                     await sleep(2000)
@@ -175,40 +174,28 @@ _*Harap tunggu sebentar, file anda akan segera dikirim*_`
             await msg.reply(process.env.MESSAGE_LOAD)
 
             if (!fullArgs || !/https:|http:/.test(fullArgs) || !/youtube.com|youtu.be/.test(fullArgs)) return msg.reply(process.env.MESSAGE_NOURL)
+            let filedata = await lolhuman('ytvideo?url=' + fullArgs)
+            if (filedata.status && filedata.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
 
-            let tokenload = await axios.get('https://video-downloader.optizord.com')
-            let $ = cheerio.load(tokenload.data)
-            let token = $('input[name="token"]').val()
+            let details = await yts({ videoId: filedata.id })
+            let caption = `*[ YOUTUBE DOWNLOAD ]*
 
-            await axios.post('https://video-downloader.optizord.com/wp-json/aio-dl/video-data/', { url: fullArgs, token })
-                .then(async ({ data }) => {
-                    if (!data || !data.medias) return msg.reply(process.env.MESSAGE_ERROR)
-                    let fileurl = (data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '1080p')) ? data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '10800p').url : (data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '720p')) ? data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '720p').url : (data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '480p')) ? data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '480p').url : (data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '360p')) ? data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '360p').url : (data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '240p')) ? data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '240p').url : data.medias.find(a => a.audioAvailable === true && a.extension === 'mp4' && a.quality === '144p').url
-
-                    if (/youtu.be/.test(fullArgs)) id = fullArgs.split('https://youtu.be/')[1].split('?')[0]
-                    if (/youtube.com/.test(fullArgs)) id = fullArgs.replace('https://www.youtube.com/watch?v=', '')
-
-                    let details = await yts({ videoId: id })
-                    let caption = `*[ YOUTUBE DOWNLOAD ]*
-
-• ID : ${details.videoId}
-• Title : ${details.title}
-• Size : ${data.medias.find(a => a.url === fileurl).formattedSize}
-• Quality : ${data.medias.find(a => a.url === fileurl).quality}
-• Duration : ${details.timestamp}
+• ID : ${filedata.id}
+• Title : ${filedata.title}
+• Size : ${filedata.link.size}
+• Quality : ${filedata.link.resolution}
+• Duration : ${filedata.duration}
 • Upload : ${details.ago}
-• Views : ${details.views}
+• Views : ${filedata.view}
 
-_*Harap tunggu sebentar, file anda akan segera dikirim*_`
+_*Harap tunggu sebentar, permintaan anda akan segera dikirim*_`
 
-                    await msg.replyImage({ url: details.thumbnail }, caption)
+            await msg.replyImage({ url: filedata.thumbnail }, caption)
 
-                    if ((parseInt(data.medias.find(a => a.url === fileurl).size) / 1000000) >= 100) {
-                        let fileurlnew = await axios.get('https://tinyurl.com/api-create.php?url=' + fileurl)
-                        return msg.reply(`*Ukuran file terlalu besar*\nKamu depat mendownload nya dengan klik link dibawah, link hanya bisa dibuka sekali saja.\n\n${fileurlnew.data}`)
-                    } else if ((parseInt(data.medias.find(a => a.url === fileurl).size) / 1000000) <= 100) return msg.replyVideo({ url: fileurl })
-                })
-                .catch(() => { return msg.reply(process.env.MESSAGE_ERROR) })
+            if (parseInt(filedata.link.size.split(' ')[0]) > 100) {
+                let fileurlnew = await axios.get('https://tinyurl.com/api-create.php?url=' + filedata.link.link)
+                return msg.reply(`*Ukuran file terlalu besar*\nKamu dapat mendownload nya dengan klik link dibawah, link hanya dapat dibuka sekali saja.\n\n${fileurlnew.data}`)
+            } else return msg.replyVideo({ url: filedata.link.link })
 
             break
         }
@@ -217,46 +204,87 @@ _*Harap tunggu sebentar, file anda akan segera dikirim*_`
             await msg.reply(process.env.MESSAGE_LOAD)
 
             if (!fullArgs || !/https:|http:/.test(fullArgs) || !/youtube.com|youtu.be/.test(fullArgs)) return msg.reply(process.env.MESSAGE_NOURL)
+            let filedata = await lolhuman('ytaudio?url=' + fullArgs)
+            if (filedata.status && filedata.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
 
-            let tokenload = await axios.get('https://video-downloader.optizord.com')
-            let $ = cheerio.load(tokenload.data)
-            let token = $('input[name="token"]').val()
+            let details = await yts({ videoId: filedata.id })
+            let caption = `*[ YOUTUBE DOWNLOAD ]*
 
-            await axios.post('https://video-downloader.optizord.com/wp-json/aio-dl/video-data/', { url: fullArgs, token })
-                .then(async ({ data }) => {
-                    if (!data || !data.medias) return msg.reply(process.env.MESSAGE_ERROR)
-                    let fileurl = data.medias.find(a => a.extension === 'mp3')
-
-                    if (/youtu.be/.test(fullArgs)) id = fullArgs.split('https://youtu.be/')[1].split('?')[0]
-                    if (/youtube.com/.test(fullArgs)) id = fullArgs.replace('https://www.youtube.com/watch?v=', '')
-
-                    let details = await yts({ videoId: id })
-                    let caption = `*[ YOUTUBE DOWNLOAD ]*
-
-• ID : ${details.videoId}
-• Title : ${details.title}
-• Size : ${fileurl.formattedSize}
-• Quality : ${fileurl.quality}
-• Duration : ${details.timestamp}
+• ID : ${filedata.id}
+• Title : ${filedata.title}
+• Size : ${filedata.link.size}
+• Quality : ${filedata.link.bitrate}
+• Duration : ${filedata.duration}
 • Upload : ${details.ago}
-• Views : ${details.views}
+• Views : ${filedata.view}
 
-_*Harap tunggu sebentar, file anda akan segera dikirim*_`
+_*Harap tunggu sebentar, permintaan anda akan segera dikirim*_`
 
-                    await msg.replyImage({ url: details.thumbnail }, caption)
+            await msg.replyImage({ url: filedata.thumbnail }, caption)
 
-                    if ((parseInt(fileurl.size) / 1000000) >= 100) {
-                        let fileurlnew = await axios.get('https://tinyurl.com/api-create.php?url=' + fileurl)
-                        return msg.reply(`*Ukuran file terlalu besar*\nKamu depat mendownload nya dengan klik link dibawah, link hanya bisa dibuka sekali saja.\n\n${fileurlnew.data}`)
-                    } else if ((parseInt(fileurl.size) / 1000000) <= 100) return msg.replyAudio({ url: fileurl })
-
-                })
-                .catch(() => { return msg.reply(process.env.MESSAGE_ERROR) })
+            if (parseInt(filedata.link.size.split(' ')[0]) > 100) {
+                let fileurlnew = await axios.get('https://tinyurl.com/api-create.php?url=' + filedata.link.link)
+                return msg.reply(`*Ukuran file terlalu besar*\nKamu dapat mendownload nya dengan klik link dibawah, link hanya bisa dibuka sekali saja.\n\n${fileurlnew.data}`)
+            } else return msg.replyAudio({ url: filedata.link.link })
 
             break
         }
 
         // ========== [ GABUT ] ========== \\
+        case 'asahotak': {
+            if (_collection.get(msg.from)) return msg.reply('Masih ada game yang belum kamu selesaikan')
+
+            let data = await lolhuman('tebak/asahotak?')
+            if (data.status && data.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
+
+            let question = await msg.reply(`[ *ASAH OTAK* ]
+            
+Jawablah pertanyaan di bawah ini
+${data.pertanyaan}
+
+Waktu: 45 detik`)
+            _collection.set(msg.from, question)
+
+            msg.createMessageCollector({ filter: data.jawaban.toLowerCase(), max: 1, time: 45000 })
+                .on('collect', msg => { msg.reply(`Jawaban benar\nJawaban : *${data.jawaban}*`) })
+                .on('end', res => {
+                    _collection.delete(msg.from)
+
+                    if (res == 'timeout') {
+                        msg.reply(`Waktu habis...\nJawaban : *${data.jawaban}*`, question)
+                    }
+                })
+
+            break
+        }
+
+        case 'caklontong': {
+            if (_collection.get(msg.from)) return msg.reply('Masih ada game yang belum kamu selesaikan')
+
+            let data = await lolhuman('tebak/caklontong?')
+            if (data.status && data.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
+
+            let question = await msg.reply(`[ *CAK LONTONG* ]
+            
+Jawablah pertanyaan di bawah ini
+${data.question}
+
+Waktu: 45 detik`)
+            _collection.set(msg.from, question)
+
+            msg.createMessageCollector({ filter: data.answer.toLowerCase(), max: 1, time: 45000 })
+                .on('collect', msg => { msg.reply(`Jawaban benar\nJawaban : *${data.answer}*`) })
+                .on('end', res => {
+                    _collection.delete(msg.from)
+
+                    if (res == 'timeout') {
+                        msg.reply(`Waktu habis...\nJawaban : *${data.answer}*`, question)
+                    }
+                })
+
+            break
+        }
+
         case 'cekmati': case 'ceknikah': case 'cekanak': case 'judi': {
             await msg.reply(process.env.MESSAGE_LOAD)
 
@@ -292,6 +320,108 @@ _*Harap tunggu sebentar, file anda akan segera dikirim*_`
             break
         }
 
+        case 'siapakahaku': {
+            if (_collection.get(msg.from)) return msg.reply('Masih ada game yang belum kamu selesaikan')
+
+            let data = await lolhuman('tebak/siapaaku?')
+            if (data.status && data.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
+
+            let question = await msg.reply(`[ *Siapa Aku* ]
+            
+${data.question}
+
+Waktu: 45 detik`)
+            _collection.set(msg.from, question)
+
+            msg.createMessageCollector({ filter: data.answer.toLowerCase(), max: 1, time: 45000 })
+                .on('collect', msg => { msg.reply(`Jawaban benar\nJawaban : *${data.answer}*`) })
+                .on('end', res => {
+                    _collection.delete(msg.from)
+
+                    if (res == 'timeout') {
+                        msg.reply(`Waktu habis...\nJawaban : *${data.answer}*`, question)
+                    }
+                })
+
+            break
+        }
+
+        case 'tebakgambar': {
+            if (_collection.get(msg.from)) return msg.reply('Masih ada game yang belum kamu selesaikan')
+
+            let data = await lolhuman('tebak/gambar2?')
+            if (data.status && data.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
+
+            let question = await msg.replyImage({ url: data.image }, `[ *TEBAK GAMBAR* ]\n\nWaktu : 120 detik`)
+            _collection.set(msg.from, question)
+
+            msg.createMessageCollector({ filter: data.answer.toLowerCase(), max: 1, time: 1200000 })
+                .on('collect', msg => { msg.reply(`Jawaban benar\nJawaban : *${data.answer}*`) })
+                .on('end', res => {
+                    _collection.delete(msg.from)
+
+                    if (res == 'timeout') {
+                        msg.reply(`Waktu habis...\nJawaban : *${data.answer}*`, question)
+                    }
+                })
+
+            break
+        }
+
+        case 'tebakkata': {
+            if (_collection.get(msg.from)) return msg.reply('Masih ada game yang belum kamu selesaikan')
+
+            let data = await lolhuman('tebak/kata?')
+            if (data.status && data.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
+
+            let question = await msg.reply(`[ *TEBAK KATA* ]
+            
+Jawablah pertanyaan di bawah ini
+${data.pertanyaan}
+
+Waktu: 45 detik`)
+            _collection.set(msg.from, question)
+
+            msg.createMessageCollector({ filter: data.jawaban.toLowerCase(), max: 1, time: 45000 })
+                .on('collect', msg => { msg.reply(`Jawaban benar\nJawaban : *${data.jawaban}*`) })
+                .on('end', res => {
+                    _collection.delete(msg.from)
+
+                    if (res == 'timeout') {
+                        msg.reply(`Waktu habis...\nJawaban : *${data.jawaban}*`, question)
+                    }
+                })
+
+            break
+        }
+
+        case 'tebaklirik': {
+            if (_collection.get(msg.from)) return msg.reply('Masih ada game yang belum kamu selesaikan')
+
+            let data = await lolhuman('tebak/lirik?')
+            if (data.status && data.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
+
+            let question = await msg.reply(`[ *TEBAK LIRIK* ]
+            
+Jawablah pertanyaan di bawah ini
+${data.question}
+
+Waktu: 45 detik`)
+            _collection.set(msg.from, question)
+
+            msg.createMessageCollector({ filter: data.answer.toLowerCase(), max: 1, time: 45000 })
+                .on('collect', msg => { msg.reply(`Jawaban benar\nJawaban : *${data.answer}*`) })
+                .on('end', res => {
+                    _collection.delete(msg.from)
+
+                    if (res == 'timeout') {
+                        msg.reply(`Waktu habis...\nJawaban : *${data.answer}*`, question)
+                    }
+                })
+
+            break
+        }
+
         // ========== [ GROUP ] ========== \\
         case 'add': case 'kick': case 'demote': case 'promote': {
             if (!msg.isGroup || (msg.isGroup && !msg.groupMetadata.participants.filter((v) => v.admin).map((v) => v.id).includes(msg.sender))) return
@@ -301,11 +431,103 @@ _*Harap tunggu sebentar, file anda akan segera dikirim*_`
             if (!fullArgs) return msg.reply(process.env.MESSAGE_NOQUERY)
             let user = msg.quoted ? msg.quoted.sender : args[0].replace(/[^0-9]/g, '') + '@s.whatsapp.net'
 
-            if (command === 'add') return await client.groupParticipantsUpdate(msg.from, [user], 'add').then(() => { return msg.reply('success') }).catch(() => { return msg.reply('failed') })
-            if (command === 'kick') return await client.groupParticipantsUpdate(msg.from, [user], 'remove').then(() => { return msg.reply('success') }).catch(() => { return msg.reply('failed') })
-            if (command === 'demote') return await client.groupParticipantsUpdate(msg.from, [user], 'demote').then(() => { return msg.reply('success') }).catch(() => { return msg.reply('failed') })
-            if (command === 'promote') return await client.groupParticipantsUpdate(msg.from, [user], 'promote').then(() => { return msg.reply('success') }).catch(() => { return msg.reply('failed') })
+            if (command === 'add') return await client.groupParticipantsUpdate(msg.from, [user], 'add').then(() => { return msg.react('✅') }).catch(() => { return msg.react('❌') })
+            if (command === 'kick') return await client.groupParticipantsUpdate(msg.from, [user], 'remove').then(() => { return msg.react('✅') }).catch(() => { return msg.react('❌') })
+            if (command === 'demote') return await client.groupParticipantsUpdate(msg.from, [user], 'demote').then(() => { return msg.react('✅') }).catch(() => { return msg.react('❌') })
+            if (command === 'promote') return await client.groupParticipantsUpdate(msg.from, [user], 'promote').then(() => { return msg.react('✅') }).catch(() => { return msg.react('❌') })
 
+            break
+        }
+
+        case 'setsubjek': {
+            if (!msg.isGroup || (msg.isGroup && !msg.groupMetadata.participants.filter((v) => v.admin).map((v) => v.id).includes(msg.sender))) return
+            if (!fullArgs) return msg.reply(process.env.MESSAGE_ERROR)
+
+            return await client.groupUpdateSubject(msg.from, fullArgs).then(() => msg.react('✅')).catch(() => msg.react('❌'))
+
+            break
+        }
+
+        case 'setdeskripsi': {
+            if (!msg.isGroup || (msg.isGroup && !msg.groupMetadata.participants.filter((v) => v.admin).map((v) => v.id).includes(msg.sender))) return
+            if (!fullArgs) return msg.reply(process.env.MESSAGE_ERROR)
+
+            return await client.groupUpdateDescription(msg.from, fullArgs).then(() => msg.react('✅')).catch(() => msg.react('❌'))
+
+            break
+        }
+
+        case 'opengroup': case 'closegroup': {
+            if (!msg.isGroup || (msg.isGroup && !msg.groupMetadata.participants.filter((v) => v.admin).map((v) => v.id).includes(msg.sender))) return
+
+            let type = (command === 'close') ? 'not_announcement' : 'announcement'
+            return await client.groupSettingUpdate(msg.from, type).then(() => msg.react('✅')).catch(() => msg.react('❌'))
+
+            break
+        }
+
+        case 'leavegroup': {
+            if (!msg.isGroup || (msg.isGroup && !msg.groupMetadata.participants.filter((v) => v.admin).map((v) => v.id).includes(msg.sender))) return
+            return await client.groupLeave(msg.from)
+
+            break
+        }
+
+        case 'linkgroup': {
+            if (!msg.isGroup || (msg.isGroup && !msg.groupMetadata.participants.filter((v) => v.admin).map((v) => v.id).includes(msg.sender))) return
+            return msg.reply('https://chat.whatsapp.com/' + await client.groupInviteCode(msg.from)).catch(() => msg.react('❌'))
+
+            break
+        }
+
+        // ========== [ RANDOM TEXT ] ========== \\
+        case 'ceritahorror': {
+            await msg.reply(process.env.MESSAGE_LOAD)
+
+            let filedata = await lolhuman('ceritahoror?')
+            if (filedata.status && filedata.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
+
+            return msg.replyImage({ url: filedata.thumbnail }, `*[ ${filedata.title} ]*\n\n${filedata.desc}`)
+            break
+        }
+
+        case 'ceritapendek': case 'cerpen': {
+            await msg.reply(process.env.MESSAGE_LOAD)
+
+            let filedata = await lolhuman('cerpen?')
+            if (filedata.status && filedata.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
+
+            return msg.reply(`*[ ${filedata.title} ]*\n\n${filedata.cerpen}\n\n- _*${filedata.creator}*_`)
+            break
+        }
+
+        case 'quotes': {
+            await msg.reply(process.env.MESSAGE_LOAD)
+
+            let filedata = await lolhuman('random/quotes?')
+            if (filedata.status && filedata.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
+
+            return msg.reply(`${filedata.quote}\n\n- _*${filedata.by}*_`)
+            break
+        }
+
+        case 'quotesnime': {
+            await msg.reply(process.env.MESSAGE_LOAD)
+
+            let filedata = await lolhuman('random/quotesnime?')
+            if (filedata.status && filedata.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
+
+            return msg.reply(`${filedata.quote}\n\n- _*${filedata.character}*_`)
+            break
+        }
+
+        case 'quotesislami': {
+            await msg.reply(process.env.MESSAGE_LOAD)
+
+            let filedata = await lolhuman('random/quotesnime?')
+            if (filedata.status && filedata.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
+
+            return msg.reply(filedata)
             break
         }
 
@@ -341,7 +563,7 @@ _*Harap tunggu sebentar, file anda akan segera dikirim*_`
 • Upload : ${file.videos[0].ago}
 • Views : ${file.videos[0].views}
 
-_*Harap tunggu sebentar, file anda akan segera dikirim*_`
+_*Harap tunggu sebentar, permintaan anda akan segera dikirim*_`
 
                     await msg.replyImage({ url: file.videos[0].thumbnail }, caption)
 
@@ -492,6 +714,47 @@ _*Harap tunggu sebentar, file anda akan segera dikirim*_`
             break
         }
 
+        // ========== [ TEXTMAKER ] ========== \\
+        case 'arcade8bit': case 'battlefield4': case 'pubg': case 'ptiktok': {
+            await msg.reply(process.env.MESSAGE_LOAD)
+
+            if (!fullArgs) return msg.reply(`Contoh penggunaan:\n${prefix + command} text1|text2`)
+            let [text1, text2] = fullArgs.split('|')
+            if (!text2) return msg.reply(`Contoh penggunaan:\n${prefix + command} text1|text2`)
+
+            return msg.replyImage({ url: `https://api.lolhuman.xyz/api/photooxy2/${command}?apikey=${process.env.APIKEY}&text1=${text1}&text2=${text2}` }).catch(() => msg.reply(process.env.MESSAGE_ERROR))
+            break
+        }
+
+        case 'burnpaper': case 'carvedwood': case 'shadow': case 'undergrass': case 'smoke': case 'summernature': case 'coffe': case 'romance': case 'cup': case 'cup1': case 'fallleaves': case 'flamming': case 'golderrose': case 'harrypotter': case 'lovemessage': case 'nature3d': {
+            await msg.reply(process.env.MESSAGE_LOAD)
+
+            if (!fullArgs) return msg.reply(`Contoh penggunaan:\n${prefix + command} text`)
+
+            return msg.replyImage({ url: `https://api.lolhuman.xyz/api/photooxy1/${command}?apikey=${process.env.APIKEY}&text=${fullArgs}` }).catch(() => msg.reply(process.env.MESSAGE_ERROR))
+            break
+        }
+
+        case 'avenger': case 'coolgravity': case 'glitch': case 'marvelstudio': case 'lionlogo': {
+            await msg.reply(process.env.MESSAGE_LOAD)
+
+            if (!fullArgs) return msg.reply(`Contoh penggunaan:\n${prefix + command} text1|text2`)
+            let [text1, text2] = fullArgs.split('|')
+            if (!text2) return msg.reply(`Contoh penggunaan:\n${prefix + command} text1|text2`)
+
+            return msg.replyImage({ url: `https://api.lolhuman.xyz/api/textprome2/${command}?apikey=${process.env.APIKEY}&text1=${text1}&text2=${text2}` }).catch(() => msg.reply(process.env.MESSAGE_ERROR))
+            break
+        }
+
+        case 'blackpink': case 'sliced': case 'metaldark': case 'luxury': case 'magma': case 'greenneon': case 'halloween': case 'holographic': case 'horrorblood': case 'icecold': case 'impressiveglitch': case 'jokerlogo': case 'bloodfrosted': case 'bokeh': case 'box3d': case 'breakwall': case 'cloud': case 'deluxesilver': case 'fireworksparkle': case 'futureneon': {
+            await msg.reply(process.env.MESSAGE_LOAD)
+
+            if (!fullArgs) return msg.reply(`Contoh penggunaan:\n${prefix + command} text`)
+
+            return msg.replyImage({ url: `https://api.lolhuman.xyz/api/textprome/${command}?apikey=${process.env.APIKEY}&text=${fullArgs}` }).catch(() => msg.reply(process.env.MESSAGE_ERROR))
+            break
+        }
+
         // ========== [ TOOLS ] ========== \\
         case 'ebase64': case 'dbase64': {
             if (!fullArgs) return msg.reply(process.env.MESSAGE_NOQUERY)
@@ -520,6 +783,43 @@ _*Harap tunggu sebentar, file anda akan segera dikirim*_`
                         return msg.replyImage({ url: fileurl }).then(() => { fs.unlinkSync(fileurl) }).catch(() => { fs.unlinkSync(fileurl) })
                     })
                     .catch(() => { return msg.reply(process.env.MESSAGE_ERROR) })
+            } else return msg.reply(process.env.MESSAGE_NOMEDIA.replace('{prefix + command}', prefix + command))
+
+            break
+        }
+
+        case 'jadianime': {
+            await msg.reply(process.env.MESSAGE_LOAD)
+
+            if (msg.typeCheck.isImage || msg.typeCheck.isQuotedImage) {
+                let path = `jadianime-${Date.now()}.jpg`
+                let file = (await msg.download('buffer') || (msg.quoted && (await msg.quoted.download('buffer'))))
+                await fs.writeFileSync(path, file)
+
+                let fileurl = await telegraph(path)
+                await fs.unlinkSync(path)
+
+                return msg.replyImage({ url: `https://api.lolhuman.xyz/api/imagetoanime?img=${fileurl}&apikey=${process.env.APIKEY}` }).catch(() => msg.reply(process.env.MESSAGE_ERROR))
+
+            } else return msg.reply(process.env.MESSAGE_NOMEDIA.replace('{prefix + command}', prefix + command))
+
+            break
+        }
+
+        case 'ocr': case 'textreader': {
+            await msg.reply(process.env.MESSAGE_LOAD)
+
+            if (msg.typeCheck.isImage || msg.typeCheck.isQuotedImage) {
+                let path = `ocr-${Date.now()}.jpg`
+                let file = (await msg.download('buffer') || (msg.quoted && (await msg.quoted.download('buffer'))))
+                await fs.writeFileSync(path, file)
+
+                let fileurl = await telegraph(path)
+                let filedata = await lolhuman('ocr?img=' + fileurl)
+                await fs.unlinkSync(path)
+
+                if (filedata.status && filedata.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
+                return msg.reply(filedata)
             } else return msg.reply(process.env.MESSAGE_NOMEDIA.replace('{prefix + command}', prefix + command))
 
             break
@@ -576,6 +876,16 @@ _*Harap tunggu sebentar, file anda akan segera dikirim*_`
                 .then(({ data }) => { return msg.reply(data) })
                 .catch(() => { return msg.reply(process.env.MESSAGE_ERROR) })
 
+            break
+        }
+
+        case 'shortlink2': case 'shortlink3': {
+            if (!fullArgs || !fullArgs.startsWith('http')) return msg.reply(`Contoh penggunaan: \n${prefix + command} https://domainku.com`)
+
+            let data = await lolhuman(command + '?url=' + fullArgs)
+            if (data.status && data.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
+
+            return msg.reply(filedata)
             break
         }
 
