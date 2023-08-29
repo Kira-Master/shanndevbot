@@ -459,7 +459,7 @@ Waktu: 45 detik`)
         case 'opengroup': case 'closegroup': {
             if (!msg.isGroup || (msg.isGroup && !msg.groupMetadata.participants.filter((v) => v.admin).map((v) => v.id).includes(msg.sender))) return
 
-            let type = (command === 'close') ? 'not_announcement' : 'announcement'
+            let type = command === 'closegroup' ? 'announcement' : 'not_announcement'
             return await client.groupSettingUpdate(msg.from, type).then(() => msg.react('✅')).catch(() => msg.react('❌'))
 
             break
