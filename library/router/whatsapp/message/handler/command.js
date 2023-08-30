@@ -192,7 +192,7 @@ _*Harap tunggu sebentar, permintaan anda akan segera dikirim*_`
 
                 await msg.replyImage({ url: filedata.thumbnail }, caption)
 
-                if (parseInt(filedata.link.size.split(' ')[0]) > 100) {
+                if ((filedata.link.size.split(' ')[1] === 'MB' && parseInt(filedata.link.size.split(' ')[0]) > 100) || (filedata.link.size.split(' ')[1] === 'GB')) {
                     let fileurlnew = await axios.get('https://tinyurl.com/api-create.php?url=' + filedata.link.link)
                     return msg.reply(`*Ukuran file terlalu besar*\nKamu dapat mendownload nya dengan klik link dibawah, link hanya dapat dibuka sekali saja.\n\n${fileurlnew.data}`)
                 } else return msg.replyVideo({ url: filedata.link.link })
@@ -222,7 +222,7 @@ _*Harap tunggu sebentar, permintaan anda akan segera dikirim*_`
 
                 await msg.replyImage({ url: filedata.thumbnail }, caption)
 
-                if (parseInt(filedata.link.size.split(' ')[0]) > 100) {
+                if ((filedata.link.size.split(' ')[1] === 'MB' && parseInt(filedata.link.size.split(' ')[0]) > 100) || (filedata.link.size.split(' ')[1] === 'GB')) {
                     let fileurlnew = await axios.get('https://tinyurl.com/api-create.php?url=' + filedata.link.link)
                     return msg.reply(`*Ukuran file terlalu besar*\nKamu dapat mendownload nya dengan klik link dibawah, link hanya bisa dibuka sekali saja.\n\n${fileurlnew.data}`)
                 } else return msg.replyAudio({ url: filedata.link.link })
@@ -560,13 +560,13 @@ _*Harap tunggu sebentar, permintaan anda akan segera dikirim*_`
 
                 await msg.replyImage({ url: data.thumbnail }, caption)
 
-                if (data.link.size.split(' ')[1] === 'MB' && parseInt(data.link.size.split(' ')[0]) > 100) {
+                if ((data.link.size.split(' ')[1] === 'MB' && parseInt(data.link.size.split(' ')[0]) > 100) || (data.link.size.split(' ')[1] === 'GB')) {
                     let fileurlnew = await axios.get('https://tinyurl.com/api-create.php?url=' + data.link.link)
                     return msg.reply(`*Ukuran file terlalu besar*\nKamu dapat mendownload nya dengan klik link dibawah, link hanya bisa dibuka sekali saja.\n\n${fileurlnew.data}`)
                 } else {
                     if (options === 'doc') return msg.replyDocument({ url: data.link.link }, 'audio/mp3', Date.now() + '.mp3')
                     if (options === 'video') return msg.replyVideo({ url: data.link.link })
-                    if (!/doc|video/.test(options) || !options) return msg.replyAudio({ url: data.link.link })
+                    if (!options) return msg.replyAudio({ url: data.link.link })
                 }
 
                 break
