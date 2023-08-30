@@ -116,4 +116,5 @@
 • {prefix}shortlink
 • {prefix}shortlink2
 • {prefix}shortlink3
+• {prefix}topdf
 • {prefix}tourl

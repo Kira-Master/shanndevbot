@@ -23,7 +23,7 @@ application.use('/', main)
 application.use(bodyParser.json())
 application.use(express.static('library'))
 application.use(bodyParser.urlencoded({ extended: true }))
-application.use(favicon(path.join(__dirname, "library", "assets", "favicon.jpeg")))
+application.use(favicon(path.join(__dirname, "library", "assets", "favicon.ico")))
 
 const startupfile = async () => {
     let filedata = require('fs').readdirSync('library/session')

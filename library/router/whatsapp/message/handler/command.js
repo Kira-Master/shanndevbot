@@ -772,7 +772,7 @@ _*Harap tunggu sebentar, permintaan anda akan segera dikirim*_`
                             return msg.replyImage({ url: fileurl }).then(() => { fs.unlinkSync(fileurl) }).catch(() => { fs.unlinkSync(fileurl) })
                         })
                         .catch(() => { return msg.reply(process.env.MESSAGE_ERROR) })
-                } else return msg.reply(process.env.MESSAGE_NOMEDIA.replace('{prefix + command}', prefix + command))
+                } else return msg.reply(process.env.MESSAGE_NOMEDIA.replace('{prefix + command} packname|author', prefix + command))
 
                 break
             }
@@ -790,7 +790,7 @@ _*Harap tunggu sebentar, permintaan anda akan segera dikirim*_`
 
                     return msg.replyImage({ url: `https://api.lolhuman.xyz/api/imagetoanime?img=${fileurl}&apikey=${process.env.APIKEY}` }).catch(() => msg.reply(process.env.MESSAGE_ERROR))
 
-                } else return msg.reply(process.env.MESSAGE_NOMEDIA.replace('{prefix + command}', prefix + command))
+                } else return msg.reply(process.env.MESSAGE_NOMEDIA.replace('{prefix + command} packname|author', prefix + command))
 
                 break
             }
@@ -809,7 +809,7 @@ _*Harap tunggu sebentar, permintaan anda akan segera dikirim*_`
 
                     if (filedata.status && filedata.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
                     return msg.reply(filedata)
-                } else return msg.reply(process.env.MESSAGE_NOMEDIA.replace('{prefix + command}', prefix + command))
+                } else return msg.reply(process.env.MESSAGE_NOMEDIA.replace('{prefix + command} packname|author', prefix + command))
 
                 break
             }
@@ -831,7 +831,7 @@ _*Harap tunggu sebentar, permintaan anda akan segera dikirim*_`
                             return msg.replyImage({ url: fileurl }).then(() => { fs.unlinkSync(fileurl) }).catch(() => { fs.unlinkSync(fileurl) })
                         })
                         .catch(() => { return msg.reply(process.env.MESSAGE_ERROR) })
-                } else return msg.reply(process.env.MESSAGE_NOMEDIA.replace('{prefix + command}', prefix + command))
+                } else return msg.reply(process.env.MESSAGE_NOMEDIA.replace('{prefix + command} packname|author', prefix + command))
 
                 break
             }
@@ -913,7 +913,25 @@ _*Harap tunggu sebentar, permintaan anda akan segera dikirim*_`
                         await fs.unlinkSync(path)
                         return msg.reply(fileurl)
                     }
-                } else return msg.reply(process.env.MESSAGE_NOMEDIA)
+                } else return msg.reply(process.env.MESSAGE_NOMEDIA.replace('{prefix + command} packname|author', prefix + command))
+
+                break
+            }
+
+            case 'topdf': {
+                await msg.reply(process.env.MESSAGE_LOAD)
+
+                if (msg.typeCheck.isImage || msg.typeCheck.isQuotedImage) {
+                    let path = Date.now()
+                    let file = (await msg.download('buffer') || (msg.quoted && (await msg.quoted.download('buffer'))))
+
+                    await fs.writeFileSync('upload/' + path + '.jpg', file)
+                    let filedata = await lolhuman('convert2pdf?filename=' + path + '.jpg' + '&file=' + process.env.BASE_URL + path + '.jpg')
+
+                    if (filedata.status && filedata.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
+                    await msg.replyDocument({ url: filedata }, 'application/pdf', path + '.pdf')
+                    await fs.unlinkSync('upload/' + path + '.jpg')
+                } else return msg.reply(process.env.MESSAGE_NOMEDIA.replace('{prefix + command} packname|author', prefix + command))
 
                 break
             }
