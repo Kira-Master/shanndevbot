@@ -23,7 +23,7 @@
         </div>
     </nav>
     <div class="container">
-        <div class="row justify-content-center">
+        <div class="row tengah justify-content-center">
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-header">
@@ -47,19 +47,45 @@
     <div class="fixed-bottom text-center py-2">
         <small class="text-muted">
             <div class="d-flex gap-3 justify-content-center">
-                <a href="https://wa.me/6285781183473" class="text-muted" target="_blank">Donasi</a>
-                <a href="https://shanndevapi.com/" class="text-muted" target="_blank">Documentation</a>
+                <a href="javascript:void(0)" class="text-muted" id="tutorial">Tutorial</a>
             </div>
             All Rights Reserved by
-            <a href="https://fb.me/shanndev28" class="text-muted" target="_blank">@shanndev28.</a>
+            <a href="https://instagram.com/shanndev28" class="text-muted" target="_blank">@shanndev28.</a>
         </small>
     </div>
 
-    <!-- Modal -->
+    <!-- Modal Connection -->
     <div class="modal fade" id="connection" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-body" id="logs"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tutorial -->
+    <div class="modal fade" id="tutorial-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content" style="border: none;">
+                <div class="modal-body">
+                    <div class="row justify-content-center text-center">
+                        <div class="col-md-4 mb-5">
+                            <img src="/assets/1.png" alt="sender" class="img-fluid mb-3"
+                                style="border: 0.5px solid white;">
+                            <h6>Masukkan nomor whatsapp yang ingin digunakan untuk bot</h6>
+                        </div>
+                        <div class="col-md-4 mb-5">
+                            <img src="/assets/2.png" alt="scan" class="img-fluid mb-3"
+                                style="border: 0.5px solid white;">
+                            <h6>Buka Whatsapp > Perangkat tertaut > Scan QRCode</h6>
+                        </div>
+                        <div class="col-md-4 mb-5">
+                            <img src="/assets/3.png" alt="success" class="img-fluid mb-3"
+                                style="border: 0.5px solid white;">
+                            <h6>Proses Selesai dan bot akan otomatis berjalan</h6>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -69,6 +95,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
     <script src="/assets/script.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        $('#tutorial').click(() => {
+            $('#tutorial-modal').modal('show')
+        })
+    </script>
 </body>
 
 </html>
