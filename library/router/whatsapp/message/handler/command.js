@@ -926,7 +926,7 @@ _*Harap tunggu sebentar, permintaan anda akan segera dikirim*_`
                     let file = (await msg.download('buffer') || (msg.quoted && (await msg.quoted.download('buffer'))))
 
                     await fs.writeFileSync('library/upload/' + path + '.jpg', file)
-                    let filedata = await lolhuman('convert2pdf?filename=' + path + '.jpg' + '&file=' + process.env.BASE_URL + path + '.jpg')
+                    let filedata = await lolhuman('convert2pdf?filename=' + path + '.jpg' + '&file=' + process.env.BASE_URL + 'upload/' + path + '.jpg')
 
                     if (filedata.status && filedata.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
                     await msg.replyDocument({ url: filedata }, 'application/pdf', path + '.pdf')
