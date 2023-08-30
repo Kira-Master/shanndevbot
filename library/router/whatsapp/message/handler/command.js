@@ -856,12 +856,9 @@ _*Harap tunggu sebentar, permintaan anda akan segera dikirim*_`
             }
 
             case 'shortlink': case 'slink': {
-                if (!fullArgs || !fullArgs.startsWith('http')) return msg.reply(`Contoh penggunaan: \n${prefix + command} https://domainku.com\n${prefix + command} https://domainku.com --alias domainku28`)
+                if (!fullArgs || !fullArgs.startsWith('http')) return msg.reply(`Contoh penggunaan: \n${prefix + command} https://domainku.com`)
 
-                let alias = (fullArgs.split(' --alias ')) ? fullArgs.split(' --alias ')[1] : null
-                let domain = (fullArgs.split(' --alias ')) ? fullArgs.split(' --alias ')[0] : fullArgs
-
-                await axios.get('https://tinyurl.com/api-create.php?url=' + domain + '&alias=' + alias)
+                await axios.get('https://tinyurl.com/api-create.php?url=' + fullArgs)
                     .then(({ data }) => { return msg.reply(data) })
                     .catch(() => { return msg.reply(process.env.MESSAGE_ERROR) })
 
@@ -874,7 +871,7 @@ _*Harap tunggu sebentar, permintaan anda akan segera dikirim*_`
                 let data = await lolhuman(command + '?url=' + fullArgs)
                 if (data.status && data.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
 
-                return msg.reply(filedata)
+                return msg.reply(data)
                 break
             }
 
@@ -936,7 +933,7 @@ _*Harap tunggu sebentar, permintaan anda akan segera dikirim*_`
                 break
             }
         }
-    } catch {
+    } catch (error) {
         return msg.reply(process.env.MESSAGE_ERROR)
     }
 }
