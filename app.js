@@ -25,13 +25,16 @@ application.use(express.static('library'))
 application.use(bodyParser.urlencoded({ extended: true }))
 application.use(favicon(path.join(__dirname, "library", "assets", "favicon.jpeg")))
 
-const startup = async () => {
+const startupfile = async () => {
     let filedata = require('fs').readdirSync('library/session')
     if (!filedata || !filedata.length) return
 
     for (let a of filedata) {
-        console.log('[ ! ] ' + a + ' is running!')
-        await whatsappConnection(a)
+        let checksender = require('fs').readdirSync('library/session/' + a)
+        if (checksender && checksender.length) {
+            console.log('[ ! ] ' + a + ' is running')
+            await whatsappConnection(a)
+        }
     }
 }
 
@@ -49,7 +52,8 @@ socketIO.on('connection', socket => {
     })
 })
 
-startup()
-
 process.on('uncaughtException', (error) => { console.log(`[ ! ] ${error.message}`) })
-server.listen(2866, () => { console.log(`[ ! ] Webiste is running on 2866`) })
+server.listen(2866, async () => {
+    await startupfile()
+    console.log(`[ ! ] Webiste is running on 2866`)
+})
