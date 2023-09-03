@@ -1,5 +1,5 @@
 const fs = require('fs')
-const { lolhuman } = require('@router/myfunc')
+const { telegraph, lolhuman } = require('@router/myfunc')
 
 module.exports = {
     wait: true,
@@ -10,7 +10,8 @@ module.exports = {
             let file = (await msg.download('buffer') || (msg.quoted && (await msg.quoted.download('buffer'))))
 
             await fs.writeFileSync('library/upload/' + path + '.jpg', file)
-            let filedata = await lolhuman('convert2pdf?filename=' + path + '.jpg' + '&file=' + process.env.BASE_URL + 'upload/' + path + '.jpg')
+            let fileurl = await telegraph(path + '.jpg')
+            let filedata = await lolhuman('convert2pdf?filename=' + path + '.jpg' + '&file=' + fileurl)
 
             await fs.unlinkSync('upload/' + path + '.jpg')
 
