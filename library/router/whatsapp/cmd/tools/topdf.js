@@ -13,7 +13,7 @@ module.exports = {
             let fileurl = await telegraph('library/upload/' + path + '.jpg')
             let filedata = await lolhuman('convert2pdf?filename=' + path + '.jpg' + '&file=' + fileurl)
 
-            await fs.unlinkSync('upload/' + path + '.jpg')
+            await fs.unlinkSync('library/upload/' + path + '.jpg')
 
             if (filedata.status && filedata.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
             return msg.replyDocument({ url: filedata }, 'application/pdf', path + '.pdf')
