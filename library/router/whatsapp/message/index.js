@@ -1,7 +1,6 @@
 const { ICommand } = require('@router/builder')
 const { commands } = require('@router/builder/cmd')
 const { getContentType } = require('@whiskeysockets/baileys')
-const sendMessage = require('@server/whatsapp/message/handler/command')
 const serialize = require('@server/whatsapp/message/handler/serialize')
 
 const _collection = new Map()
