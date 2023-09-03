@@ -1,5 +1,9 @@
 require('dotenv').config()
 require('module-alias/register')
+require('@router/builder/prototype')
+
+const { Utility } = require('@router/builder/registercmd')
+const utility = new Utility()
 
 const http = require('http')
 const path = require('path')
@@ -9,7 +13,7 @@ const express = require('express')
 const { GlobSync } = require('glob')
 const favicon = require('serve-favicon')
 const bodyParser = require('body-parser')
-const whatsappConnection = require('@server/whatsapp/connection')
+const whatsappConnection = require('@server/whatsapp/connect')
 
 const application = express()
 const server = http.createServer(application)

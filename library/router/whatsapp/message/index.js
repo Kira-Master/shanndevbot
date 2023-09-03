@@ -1,6 +1,10 @@
+const { ICommand } = require('@router/builder')
+const { commands } = require('@router/builder/cmd')
 const { getContentType } = require('@whiskeysockets/baileys')
 const sendMessage = require('@server/whatsapp/message/handler/command')
 const serialize = require('@server/whatsapp/message/handler/serialize')
+
+const _collection = new Map()
 
 module.exports = async (client, { messages, type }) => {
     const message = messages[0]
@@ -20,7 +24,16 @@ module.exports = async (client, { messages, type }) => {
     const prefix = isCommand ? msg.body[0] : null
     const args = msg.body?.trim()?.split(/ +/)?.slice(1)
     const command = isCommand ? msg.body.slice(prefix.length).trim().split(/ +/).shift().toLowerCase() : msg.body
-    const fullArgs = msg.body?.replace(command, '')?.slice(1)?.trim() || null
+    const fullArgs = args.join(' ')
 
-    return await sendMessage({ client, msg, prefix, args, command, fullArgs })
+    const getCommand = commands.get(command) || commands.find((v) => v?.aliases && v?.aliases?.includes(command))
+    if (getCommand) {
+        if (getCommand.wait) await msg.reply(process.env.MESSAGE_LOAD)
+        if (getCommand.example && !fullArgs) return msg.reply(getCommand.example)
+        if (getCommand.group && !msg.isGroup) return msg.reply(process.env.MESSAGE_GROUP)
+        if (getCommand.private && msg.isGroup) return msg.reply(process.env.MESSAGE_PRIVATE)
+        if (getCommand.group && getCommand.admin && !msg.groupMetadata.participants.filter((v) => v.admin).map((v) => v.id).includes(msg.sender)) return msg.reply(process.env.MESSAGE_ADMIN)
+
+        return getCommand.callback({ client, message, msg, command, prefix, args, fullArgs })
+    }
 }

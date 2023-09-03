@@ -7,7 +7,7 @@ const { default: WASocket, DisconnectReason, fetchLatestBaileysVersion, useMulti
 const connectWhatsapp = async (sender, socket) => {
     let { version } = await fetchLatestBaileysVersion()
     let { state, saveCreds } = await useMultiFileAuthState('library/session/' + sender)
-    let client = WASocket({ auth: state, logger: Pino({ level: 'silent' }), browser: ['Sender: ' + sender, 'Safari', '1.0'], version })
+    let client = WASocket({ auth: state, generateHighQualityLinkPreview: true, logger: Pino({ level: 'silent' }), browser: ['Sender: ' + sender, 'Safari', '1.0'], version })
 
     client.ev.on('creds.update', saveCreds)
     client.ev.on('connection.update', ({ lastDisconnect, connection, qr }) => {
