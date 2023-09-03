@@ -10,7 +10,7 @@ module.exports = {
             let file = (await msg.download('buffer') || (msg.quoted && (await msg.quoted.download('buffer'))))
 
             await fs.writeFileSync('library/upload/' + path + '.jpg', file)
-            let fileurl = await telegraph(path + '.jpg')
+            let fileurl = await telegraph('library/upload/' + path + '.jpg')
             let filedata = await lolhuman('convert2pdf?filename=' + path + '.jpg' + '&file=' + fileurl)
 
             await fs.unlinkSync('upload/' + path + '.jpg')
