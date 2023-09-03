@@ -15,7 +15,7 @@ module.exports = {
             await fs.unlinkSync('library/upload/' + path + '.jpg')
 
             if (filedata.status && filedata.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
-            return client.sendMessage(msg.from, { document: { url: filedata }, fileName: path + '.pdf' })
+            return msg.reply(filedata)
         } else return msg.reply(process.env.MESSAGE_NOMEDIA.replace('{prefix + command}', prefix + command))
     }
 }
