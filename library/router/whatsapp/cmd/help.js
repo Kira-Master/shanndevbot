@@ -2,7 +2,7 @@ const { timeFormat } = require('@router/myfunc')
 const { listCommands, commands } = require('@router/builder/cmd')
 
 module.exports = {
-    aliases: ['menu', 'download', 'gamemenu', 'randomtext', 'searchmenu', 'stickermenu', 'textmaker', 'toolsmenu'],
+    aliases: ['menu', 'download', 'gamemenu', 'randomtext', 'randomimage', 'searchmenu', 'stickermenu', 'textmaker', 'toolsmenu'],
     callback: async ({ msg, client, command, prefix }) => {
         if (command === 'download') {
             let text = `*ᴅᴏᴡɴʟᴏᴀᴅ*`
@@ -21,6 +21,13 @@ module.exports = {
         } else if (command === 'randomtext') {
             let text = `*ʀᴀɴᴅᴏᴍᴛᴇxᴛ*`
             for (var i of listCommands['Random Text']) {
+                text += `\n⦿ ${prefix + i}`
+            }
+
+            return msg.reply(text)
+        } else if (command === 'randomimage') {
+            let text = `*ʀᴀɴᴅᴏᴍɪᴍᴀɢᴇ*`
+            for (var i of listCommands['Random Image']) {
                 text += `\n⦿ ${prefix + i}`
             }
 
@@ -53,25 +60,25 @@ module.exports = {
             }
 
             return msg.reply(text)
-        } else {
-            let caption = `ʜᴀʟᴏ ᴋᴀᴋ @${msg.senderNumber}👋. ꜱᴀʏᴀ ᴀᴅᴀʟᴀʜ ʙᴏᴛ ᴡʜᴀᴛꜱᴀᴘᴘ ᴏᴛᴏᴍᴀᴛɪꜱ ʏᴀɴɢ ᴅᴀᴘᴀᴛ ᴍᴇᴍʙᴀɴᴛᴜ ᴍᴇʟᴀᴋᴜᴋᴀɴ ꜱᴇꜱᴜᴀᴛᴜ, ᴍᴇɴᴄᴀʀɪ ᴅᴀɴ ᴍᴇɴᴅᴀᴘᴀᴛᴋᴀɴ ᴅᴀᴛᴀ ᴀᴛᴀᴜ ɪɴꜰᴏʀᴍᴀꜱɪ ᴍᴇʟᴀʟᴜɪ ᴡʜᴀᴛꜱᴀᴘᴘ.`
-
-            caption += '\n\nʙᴏᴛ ɪɴꜰᴏ'
-            caption += `\n⦿ *ꜰɪᴛᴜʀ:* ${commands.size} Active`
-            caption += `\n⦿ *ᴏᴡɴᴇʀ:* wa.me/${client.user.id.split(':')[0]}`
-            caption += `\n⦿ *ᴜᴘᴛɪᴍᴇ:* ${(timeFormat(process.uptime()) || 'Beberapa detik yang lalu')}`
-
-            caption += `\n\nʙᴏᴛ ᴍᴇɴᴜ`
-            caption += `\n⦿ ${prefix}ᴅᴏᴡɴʟᴏᴀᴅ`
-            caption += `\n⦿ ${prefix}ɢᴀᴍᴇᴍᴇɴᴜ`
-            caption += `\n⦿ ${prefix}ʀᴀɴᴅᴏᴍᴛᴇxᴛ`
-            caption += `\n⦿ ${prefix}ʀᴀɴᴅᴏᴍɪᴍᴀɢᴇ`
-            caption += `\n⦿ ${prefix}ꜱᴇᴀʀᴄʜᴍᴇɴᴜ`
-            caption += `\n⦿ ${prefix}ꜱᴛɪᴄᴋᴇʀᴍᴇɴᴜ`
-            caption += `\n⦿ ${prefix}ᴛᴇxᴛᴍᴀᴋᴇʀ`
-            caption += `\n⦿ ${prefix}ᴛᴏᴏʟꜱᴍᴇɴᴜ`
-
-            return client.sendMessage(msg.from, { image: { url: 'library/assets/preview.jpg' }, caption, mentions: [msg.sender] })
         }
+
+        let caption = `ʜᴀʟᴏ ᴋᴀᴋ @${msg.senderNumber}👋. ꜱᴀʏᴀ ᴀᴅᴀʟᴀʜ ʙᴏᴛ ᴡʜᴀᴛꜱᴀᴘᴘ ᴏᴛᴏᴍᴀᴛɪꜱ ʏᴀɴɢ ᴅᴀᴘᴀᴛ ᴍᴇᴍʙᴀɴᴛᴜ ᴍᴇʟᴀᴋᴜᴋᴀɴ ꜱᴇꜱᴜᴀᴛᴜ, ᴍᴇɴᴄᴀʀɪ ᴅᴀɴ ᴍᴇɴᴅᴀᴘᴀᴛᴋᴀɴ ᴅᴀᴛᴀ ᴀᴛᴀᴜ ɪɴꜰᴏʀᴍᴀꜱɪ ᴍᴇʟᴀʟᴜɪ ᴡʜᴀᴛꜱᴀᴘᴘ.`
+
+        caption += '\n\nʙᴏᴛ ɪɴꜰᴏ'
+        caption += `\n⦿ *ꜰɪᴛᴜʀ:* ${commands.size} Active`
+        caption += `\n⦿ *ᴏᴡɴᴇʀ:* wa.me/${client.user.id.split(':')[0]}`
+        caption += `\n⦿ *ᴜᴘᴛɪᴍᴇ:* ${(timeFormat(process.uptime()) || 'Beberapa detik yang lalu')}`
+
+        caption += `\n\nʙᴏᴛ ᴍᴇɴᴜ`
+        caption += `\n⦿ ${prefix}ᴅᴏᴡɴʟᴏᴀᴅ`
+        caption += `\n⦿ ${prefix}ɢᴀᴍᴇᴍᴇɴᴜ`
+        caption += `\n⦿ ${prefix}ʀᴀɴᴅᴏᴍᴛᴇxᴛ`
+        caption += `\n⦿ ${prefix}ʀᴀɴᴅᴏᴍɪᴍᴀɢᴇ`
+        caption += `\n⦿ ${prefix}ꜱᴇᴀʀᴄʜᴍᴇɴᴜ`
+        caption += `\n⦿ ${prefix}ꜱᴛɪᴄᴋᴇʀᴍᴇɴᴜ`
+        caption += `\n⦿ ${prefix}ᴛᴇxᴛᴍᴀᴋᴇʀ`
+        caption += `\n⦿ ${prefix}ᴛᴏᴏʟꜱᴍᴇɴᴜ`
+
+        return client.sendMessage(msg.from, { image: { url: 'library/assets/preview.jpg' }, caption, mentions: [msg.sender] })
     }
 }
