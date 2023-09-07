@@ -9,7 +9,7 @@ module.exports = {
         if (!/https:|https:/.test(fullArgs) || !/twitter.com/.test(fullArgs)) return msg.reply(process.env.MESSAGE_NOURL)
         let data = await lolhuman('twitter?url=' + fullArgs)
 
-        if (data.status && data.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
+        if (!data || data.status && data.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
         for (let a of data.media) {
             if (a.type === 'photo') {
                 msg.replyImage({ url: a.url })

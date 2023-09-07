@@ -7,7 +7,7 @@ module.exports = {
         if (_collection.get(msg.from)) return
 
         let data = await lolhuman('tebak/gambar2?')
-        if (data.status && data.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
+        if (!data || data.status && data.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
 
         let question = await msg.replyImage({ url: data.image }, `[ *TEBAK GAMBAR* ]\n\nWaktu : 120 detik`)
         _collection.set(msg.from, question)

@@ -7,7 +7,7 @@ module.exports = {
         if (_collection.get(msg.from)) return
 
         let data = await lolhuman('tebak/siapaaku?')
-        if (data.status && data.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
+        if (!data || data.status && data.status === 500) return msg.reply(process.env.MESSAGE_ERROR)
 
         let question = await msg.reply(`[ *Siapa Aku* ]
             

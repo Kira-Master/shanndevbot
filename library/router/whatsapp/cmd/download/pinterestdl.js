@@ -9,7 +9,7 @@ module.exports = {
         if (!/https:|http:/.test(fullArgs) || !/pinterest.com/.test(fullArgs)) return msg.reply(process.env.MESSAGE_NOURL)
 
         let data = await lolhuman('pinterestdl?url=' + fullArgs)
-        if (data.status && data.status === 500) return msg.reply(process.env.ERROR)
+        if (!data || data.status && data.status === 500) return msg.reply(process.env.ERROR)
 
         let { headers } = await axios.get(data)
         if (!headers) return msg.reply(data)
