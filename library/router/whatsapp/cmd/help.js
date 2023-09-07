@@ -13,8 +13,10 @@ module.exports = {
         caption += `\n⦿ *ᴜᴘᴛɪᴍᴇ:* ${(timeFormat(process.uptime()) || 'Beberapa detik yang lalu')}`
 
         caption += `\n\nʙᴏᴛ ᴍᴇɴᴜ`
+        caption += `\n⦿ ${prefix}ᴀɴɪᴍᴇ`
         caption += `\n⦿ ${prefix}ᴅᴏᴡɴʟᴏᴀᴅ`
         caption += `\n⦿ ${prefix}ɢᴀᴍᴇᴍᴇɴᴜ`
+        caption += `\n⦿ ${prefix}ᴘʀɪᴍʙᴏɴ`
         caption += `\n⦿ ${prefix}ʀᴀɴᴅᴏᴍᴛᴇxᴛ`
         caption += `\n⦿ ${prefix}ʀᴀɴᴅᴏᴍɪᴍᴀɢᴇ`
         caption += `\n⦿ ${prefix}ꜱᴇᴀʀᴄʜᴍᴇɴᴜ`
